@@ -46,23 +46,17 @@ exports.verifyInvestorDocument = async (req, res) => {
             throw new Error("Failed to communicate with AI OCR Verification Engine.");
         }
 
-        // 4. Automated State Machine based on AI prediction
-        // The API returns 'account_found' which acts as our boolean verified flag
         const is_ai_pre_verified = aiPayload.account_found;
 
         const ticket = await Ticket.findById(ticketId).session(session);
-        if (!ticket) {
-            throw new Error("Target Ticket ID not found in database.");
-        }
+        if (!ticket) throw new Error("Target Ticket ID not found in database.");
 
         const previousStatus = ticket.status;
-        // Advance to L2_APPROVAL if AI successfully matches the account number, else reject back to L1_REVIEW
         const newStatus = is_ai_pre_verified ? 'L2_APPROVAL' : 'L1_REVIEW';
         
         ticket.status = newStatus;
         await ticket.save({ session });
 
-        // 5. Append precise event to the AuditLog collection
         const auditLog = new AuditLog({
             entityId: ticket._id,
             entityType: 'Ticket',
@@ -78,27 +72,57 @@ exports.verifyInvestorDocument = async (req, res) => {
         });
 
         await auditLog.save({ session });
-
-        // 6. Commit ACID Transaction
         await session.commitTransaction();
         session.endSession();
 
         return res.status(200).json({
-            message: `Document processed. Automated State Machine advanced ticket from ${previousStatus} to ${newStatus}.`,
+            message: `Document processed. State Machine advanced ticket to ${newStatus}.`,
             is_ai_pre_verified,
             extractedData: aiPayload.extracted_text
         });
 
     } catch (error) {
-        // 7. Strict Error Intercept & Rollback
         await session.abortTransaction();
         session.endSession();
         console.error("Maker Transaction aborted cleanly:", error);
-        
-        const statusCode = error.message.includes("not found") ? 404 : 500;
-        return res.status(statusCode).json({ 
-            message: "Failed to verify document. MongoDB Transaction safely aborted.", 
-            error: error.message 
+        return res.status(error.message.includes("not found") ? 404 : 500).json({ 
+            message: "Failed to verify document.", error: error.message 
         });
+    }
+};
+
+exports.escalateTicket = async (req, res) => {
+    const { id } = req.params;
+    const { notes } = req.body;
+    const adminId = req.user ? req.user.id : new mongoose.Types.ObjectId('60d5ecb8b392d700153f3a01');
+    
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    
+    try {
+        const ticket = await Ticket.findById(id).session(session);
+        if(!ticket) throw new Error("Ticket not found.");
+        
+        const previousStatus = ticket.status;
+        ticket.status = 'L2_APPROVAL';
+        await ticket.save({ session });
+        
+        const auditLog = new AuditLog({
+            entityId: ticket._id,
+            entityType: 'Ticket',
+            action: 'ESCALATED_TO_L2',
+            performedBy: adminId,
+            details: { previousStatus, newStatus: 'L2_APPROVAL', note: notes }
+        });
+        
+        await auditLog.save({ session });
+        await session.commitTransaction();
+        session.endSession();
+        
+        return res.status(200).json({ message: "Successfully escalated to L2 Checker.", ticket });
+    } catch(err) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(500).json({ error: err.message });
     }
 };

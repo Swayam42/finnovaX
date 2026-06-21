@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ticketController = require('../controllers/ticket.controller');
+const upload = require('../middleware/upload');
 
 // Temporary mock auth middleware
 const mockAuthMiddleware = (req, res, next) => {
@@ -9,6 +10,6 @@ const mockAuthMiddleware = (req, res, next) => {
 };
 
 // Route: POST /api/tickets
-router.post('/', mockAuthMiddleware, ticketController.createTicket);
+router.post('/', mockAuthMiddleware, upload.single('file'), ticketController.createTicket);
 
 module.exports = router;
