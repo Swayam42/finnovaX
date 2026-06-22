@@ -4,7 +4,7 @@ const upload = require('../middleware/upload');
 const adminController = require('../controllers/admin.controller');
 
 const mockAdminL1Middleware = (req, res, next) => {
-    req.user = { id: 'usr_202', role: 'ADMIN_L1' };
+    req.user = { id: '60d5ecb8b392d700153f3a01', role: 'ADMIN_L1' };
     next();
 };
 
