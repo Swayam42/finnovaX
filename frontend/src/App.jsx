@@ -20,9 +20,16 @@ const ProtectedRoute = ({ children, requiredRole, userRole }) => {
     return children;
 };
 
+const getInitialRole = () => {
+    const path = window.location.pathname;
+    if (path.includes('investor')) return 'INVESTOR';
+    if (path.includes('l2-checker')) return 'ADMIN_L2';
+    return 'ADMIN_L1';
+};
+
 function App() {
-    // Centralized Mock Authentication State for easy testing
-    const [role, setRole] = useState('ADMIN_L1'); // Default to L1 to view the new feature
+    // Centralized Mock Authentication State synced with URL path
+    const [role, setRole] = useState(getInitialRole());
 
     return (
         <BrowserRouter>
