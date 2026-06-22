@@ -37,6 +37,10 @@ def analyze_complaint(request: ComplaintRequest):
         # Calculate Frustration Index
         if label == "NEGATIVE":
             score = confidence
+            # Apply frustration multiplier for severe keywords
+            severe_keywords = ["lawyer", "sue", "legal", "unacceptable", "fbi", "police", "court"]
+            if any(keyword in text.lower() for keyword in severe_keywords):
+                score = min(1.0, score + 0.2)
             sentiment = "NEGATIVE"
         elif label == "POSITIVE":
             score = 1.0 - confidence
@@ -49,8 +53,9 @@ def analyze_complaint(request: ComplaintRequest):
         score = round(score, 4)
     else:
         # Fallback if model fails to load
-        sentiment = "NEGATIVE" if "angry" in text.lower() or "terrible" in text.lower() else "POSITIVE"
-        score = 0.9 if sentiment == "NEGATIVE" else 0.1
+        severe_keywords = ["lawyer", "sue", "legal", "unacceptable", "fbi", "police", "court", "angry", "terrible"]
+        sentiment = "NEGATIVE" if any(keyword in text.lower() for keyword in severe_keywords) else "POSITIVE"
+        score = 0.95 if sentiment == "NEGATIVE" else 0.1
         
     priority = "CRITICAL" if score > 0.75 else "NORMAL"
     

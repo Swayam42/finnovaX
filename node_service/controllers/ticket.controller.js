@@ -40,12 +40,14 @@ exports.createTicket = async (req, res) => {
                 question: `Summarize this investor complaint into exactly 3 short bullet points. Provide ONLY the bullets starting with dashes, nothing else: ${complaintText}`
             });
             const rawResponse = chatResponse.data.response;
-            // Parse response into array of strings
+            // Parse response into array of strings, rigorously stripping filler and numbering
             aiSummary = rawResponse.split('\n')
-                .map(line => line.replace(/^[-*•]\s*/, '').trim())
-                .filter(line => line.length > 5);
+                .map(line => line.replace(/^(\d+\.|[-*•])\s*/g, '').replace(/\*+/g, '').trim())
+                .filter(line => line.length > 5 && !line.toLowerCase().includes("here are") && !line.toLowerCase().includes("bullet points"));
                 
-            if (aiSummary.length === 0) aiSummary = [rawResponse];
+            // Truncate strictly to 3 bullets
+            if (aiSummary.length > 3) aiSummary = aiSummary.slice(0, 3);
+            if (aiSummary.length === 0) aiSummary = [rawResponse.replace(/\*+/g, '')];
         } catch (error) {
             console.error("Ollama Error:", error.message);
             aiSummary = ["Ollama AI Engine not reachable.", "Using default static insights.", "Sentiment flags potential churn."];

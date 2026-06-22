@@ -123,11 +123,28 @@ def inject_tickets():
         try:
             res = requests.post("http://localhost:5000/api/tickets", data=data, files=files)
             if res.status_code == 201:
-                print(f"Success! Ticket ID: {res.json()['ticket']['_id']}")
-                print(f"AI Assigned Priority: {res.json()['ticket']['assignedPriority']}")
-                print(f"AI Frustration Index: {res.json()['ticket']['aiSentimentScore']}")
-                print(f"AI Insights: {res.json()['ticket']['aiSummary']}")
-                print(f"OCR Extracted: {res.json()['ticket']['ocrExtractedText']}")
+                ticket_id = res.json()['ticket']['_id']
+                print(f"Success! Ticket ID: {ticket_id}")
+                
+                # --- Step 2: L1 Maker Review ---
+                print(f"  -> L1 Maker Moving to L2...")
+                l1_res = requests.post("http://localhost:5000/api/admin/move-to-l2", json={
+                    "ticketId": ticket_id,
+                    "adminId": "60d5ecb8b392d700153f3a11"
+                })
+                
+                # --- Step 3: L2 Checker Approve ---
+                print(f"  -> L2 Checker Approving...")
+                l2_res = requests.post("http://localhost:5000/api/l2/finalize", json={
+                    "ticketId": ticket_id,
+                    "checkerId": "60d5ecb8b392d700153f3a22",
+                    "action": "APPROVE",
+                    "comments": "Looks good, approved by automated script."
+                })
+                
+                if l2_res.status_code == 200:
+                    print(f"  ✅ Ticket Fully Approved! AWS LocalStack SMS & Email triggered.")
+                
             else:
                 print(f"Failed! Status Code: {res.status_code}, Response: {res.text}")
         except Exception as e:

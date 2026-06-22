@@ -21,6 +21,9 @@ mongoose.connect(MONGODB_URI)
     });
 
 // TODO: Import your route files here once created
+// Register all Mongoose models so .populate() works correctly
+require('./models/User');
+
 // Route setup
 const ticketRoutes = require('./routes/ticket.routes');
 const adminRoutes = require('./routes/admin.routes');

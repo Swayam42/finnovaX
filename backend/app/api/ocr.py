@@ -49,12 +49,19 @@ async def verify_account(
     else:
         extracted_text_blocks = ["OCR Engine Not Loaded"]
     
-    # Exact string matching logic
+    # Character normalization and fuzzy matching logic
     combined_text = " ".join(extracted_text_blocks).upper()
     clean_extracted = combined_text.replace(" ", "").replace("-", "")
     clean_account = account_number.upper().replace(" ", "").replace("-", "")
     
-    account_found = clean_account in clean_extracted
+    # Normalize common OCR mistakes
+    def normalize_ocr(text):
+        return text.replace("O", "0").replace("I", "1").replace("L", "1").replace("S", "5").replace("B", "8")
+        
+    norm_extracted = normalize_ocr(clean_extracted)
+    norm_account = normalize_ocr(clean_account)
+    
+    account_found = clean_account in clean_extracted or norm_account in norm_extracted
     
     if account_found:
         message = f"Account number '{account_number}' successfully verified in document."
