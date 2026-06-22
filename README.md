@@ -58,6 +58,12 @@ graph TD
 
 We use Docker Compose to completely containerize the application. **You do not need an AWS account, nor do you need to manually install Python, CUDA, or Node.**
 
+### 🖥️ Minimum System Requirements
+Due to the heavy on-premise AI models (Llama 3, FinBERT, PyTorch CUDA), the system requires:
+- **Free Disk Space:** Minimum **30 GB** (Images + Model Weights)
+- **RAM:** Minimum 8 GB (16 GB Recommended)
+- **GPU (Optional but Recommended):** 4 GB VRAM (RTX 2050 or higher) for hardware-accelerated OCR and NLP inference.
+
 ### Prerequisites
 1. [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running.
 2. Ensure ports `5173` (Frontend), `5000` (Node), `8000` (Python AI), `27018` (MongoDB), `11434` (Ollama), and `4566` (LocalStack) are available.
