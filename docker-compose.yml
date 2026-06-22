@@ -46,6 +46,10 @@ services:
       - PORT=5000
       - MONGODB_URI=mongodb://mongodb:27017/kfintech_nexus?directConnection=true
       - ML_SERVICE_URL=http://backend:8000
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=ap-south-1
     volumes:
       - ./node_service:/app
       - /app/node_modules
@@ -90,11 +94,24 @@ services:
               count: 1
               capabilities: [gpu]
 
+  # AWS LocalStack
+  localstack:
+    image: localstack/localstack:2.3.2
+    container_name: kfintech_localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - DEBUG=1
+      - AWS_DEFAULT_REGION=ap-south-1
+    networks:
+      - kfintech-network
+
 networks:
   kfintech-network:
     driver: bridge
 
 volumes:
   ollama_data:
+  localstack_data:
 
 

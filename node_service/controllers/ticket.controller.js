@@ -4,6 +4,8 @@ const Ticket = require('../models/Ticket');
 const AuditLog = require('../models/AuditLog');
 
 const FormData = require('form-data');
+const { v4: uuidv4 } = require("uuid");
+const { uploadToS3 } = require('../services/s3Service');
 
 exports.createTicket = async (req, res) => {
     // 1. Extract data
@@ -73,12 +75,35 @@ exports.createTicket = async (req, res) => {
             }
         }
 
+        // --- D. S3 Document Upload ---
+        let documentUrl = null;
+        let documentName = null;
+        if (file) {
+            documentName = file.originalname;
+            const fileName = `${uuidv4()}-${file.originalname}`;
+            try {
+                await uploadToS3({
+                    Key: fileName,
+                    Body: file.buffer,
+                    ContentType: file.mimetype,
+                });
+                
+                // Construct S3 path-style URL for LocalStack
+                const endpoint = process.env.AWS_ENDPOINT_URL || 'http://localhost:4566';
+                const bucket = process.env.AWS_BUCKET_NAME || 'kfintech-bucket';
+                documentUrl = `${endpoint}/${bucket}/${encodeURIComponent(fileName)}`;
+            } catch (error) {
+                console.error("LocalStack S3 Upload Error:", error.message);
+            }
+        }
+
         // 4. Create Ticket Document
         const newTicket = new Ticket({
             investorId,
             investorName,
             accountNumber,
-            documentName: file ? file.originalname : null,
+            documentName,
+            documentUrl,
             complaintText,
             aiSentimentScore: aiPayload.score || 0,
             assignedPriority: aiPayload.priority || 'NORMAL',

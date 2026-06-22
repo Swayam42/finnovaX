@@ -22,6 +22,10 @@ const TicketSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    documentUrl: {
+        type: String,
+        default: null
+    },
     aiSentimentScore: {
         type: Number,
         default: 0

@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Ticket = require('../models/Ticket');
 const AuditLog = require('../models/AuditLog');
+const { sendEmail } = require('../services/sesService');
+const { sendSMS } = require('../services/snsService');
 
 exports.finalizeTicket = async (req, res) => {
     const { ticketId, action } = req.body;
@@ -22,7 +24,7 @@ exports.finalizeTicket = async (req, res) => {
 
     try {
         // 2. Safely find the ticket ensuring it's exactly in L2_APPROVAL state
-        const ticket = await Ticket.findOne({ _id: ticketId, status: 'L2_APPROVAL' }).session(session);
+        const ticket = await Ticket.findOne({ _id: ticketId, status: 'L2_APPROVAL' }).populate('investorId').session(session);
         if (!ticket) {
             throw new Error("Target Ticket not found or is not currently pending L2_APPROVAL status.");
         }
@@ -52,6 +54,35 @@ exports.finalizeTicket = async (req, res) => {
         // 5. Commit Transaction
         await session.commitTransaction();
         session.endSession();
+
+        // 6. Send Notifications via LocalStack SES/SNS
+        try {
+            const investor = ticket.investorId;
+            const userEmail = investor ? investor.email : null;
+            const userPhone = investor ? investor.phoneNumber : null;
+            const msgStatus = action === 'APPROVE' ? 'APPROVED and RESOLVED' : 'REJECTED and CLOSED';
+            
+            const subject = `Update on your Ticket: ${ticketId}`;
+            const htmlMessage = `<h1>Hello ${ticket.investorName},</h1><p>Your ticket has been <strong>${msgStatus}</strong> by our L2 team.</p>`;
+            const textMessage = `Hello ${ticket.investorName}, your ticket ${ticketId} has been ${msgStatus}.`;
+
+            if (userEmail) {
+                await sendEmail({
+                    to: userEmail,
+                    subject: subject,
+                    message: htmlMessage
+                });
+            }
+
+            if (userPhone) {
+                await sendSMS({
+                    phoneNumber: userPhone,
+                    message: textMessage
+                });
+            }
+        } catch (notificationError) {
+            console.error("Non-critical error sending mock notification via LocalStack:", notificationError);
+        }
 
         return res.status(200).json({
             message: `Ticket successfully finalized. Automated workflow advanced ticket from ${previousStatus} to ${newStatus}.`,

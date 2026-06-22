@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { sendSMS } = require('../services/snsService');
+const { sendEmail } = require('../services/sesService');
 
 // Simulated User Database to represent MongoDB schema
 const mockUserDB = {
@@ -22,14 +24,30 @@ const mockUserDB = {
 };
 
 /**
- * 🔒 MFA / OTP Generation Placeholder
- * Ready for future AWS LocalStack Integration (SNS or SES).
+ * 🔒 MFA / OTP Generation using AWS LocalStack (SNS or SES).
  */
 const generateAndSendOTP = async (phoneNumberOrEmail) => {
     const otp = Math.floor(100000 + Math.random() * 900000);
-    console.log(`[AWS LocalStack Placeholder] 📲 Sending 6-digit OTP ${otp} to ${phoneNumberOrEmail}`);
+    console.log(`[AWS LocalStack] 📲 Sending 6-digit OTP ${otp} to ${phoneNumberOrEmail}`);
     
-    // Future code: await aws_sns_client.send(otp, phoneNumberOrEmail);
+    try {
+        if (phoneNumberOrEmail.includes('@')) {
+            await sendEmail({
+                to: phoneNumberOrEmail,
+                subject: 'Your Login OTP',
+                message: `<h1>Your OTP is: <strong>${otp}</strong></h1><p>Please do not share this with anyone.</p>`
+            });
+        } else {
+            await sendSMS({
+                phoneNumber: phoneNumberOrEmail, // Make sure it's a valid format like +1234567890 if not testing
+                message: `Your login OTP is: ${otp}. Do not share it.`
+            });
+        }
+    } catch (error) {
+        console.error("Failed to send OTP via AWS LocalStack:", error);
+        // We can swallow the error or throw it based on requirements
+    }
+    
     return otp;
 };
 

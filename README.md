@@ -1,99 +1,117 @@
-<div align="center">
-  <img src="https://img.shields.io/badge/Status-Hackathon_Ready-success?style=for-the-badge&logo=rocket" />
-  <img src="https://img.shields.io/badge/Architecture-Distributed_Microservices-blue?style=for-the-badge&logo=docker" />
-  <img src="https://img.shields.io/badge/AI_Engine-Llama_3.2_|_FinBERT_|_EasyOCR-purple?style=for-the-badge&logo=meta" />
-</div>
+# 🚀 KFintech Nexus Portal
 
-<div align="center">
-  <h1 style="font-size: 3em; font-weight: 900; letter-spacing: -1px; color: #3B82F6;">🚀 KFintech Nexus Portal</h1>
-  <p style="font-size: 1.2em;"><b>Next-Generation Enterprise Compliance & AI-Driven Workflow Automation</b></p>
-  <p><i>Transforming manual triage into a Zero-Touch, highly intelligent resolution engine.</i></p>
-</div>
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![React](https://img.shields.io/badge/react-%2320232a.svg?style=flat&logo=react&logoColor=%2361DAFB)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/node.js-6DA55F?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/python-3670A0?style=flat&logo=python&logoColor=ffdd54)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
 
----
+Welcome to the **KFintech Nexus Portal**. This is an advanced, AI-driven investor grievance and ticket management system. It securely orchestrates ticket creation, AI-powered sentiment analysis and summarization, document OCR verification, and a multi-tiered (L1/L2) administrative approval workflow.
 
-## 🎯 The Problem
-Financial institutions face thousands of investor complaints, compliance documents, and service requests daily. Currently, these are triaged manually by L1/L2 support desks, leading to:
-- ❌ **High SLA Breaches:** Slow response times due to manual reading and categorization.
-- ❌ **Human Error:** Misclassification of critical, high-risk complaints.
-- ❌ **Operational Inefficiency:** Extremely high operational costs for routine document verification.
-
-## 💡 Our Solution: The Nexus Portal
-The **KFintech Nexus Portal** is a multi-tier, AI-native compliance engine. It acts as an autonomous L1 agent that ingests, reads, and understands investor issues with human-like precision, escalating only the most complex cases to human L2 Checkers with generated insights.
-
-### 🌟 Unmatched Business Value
-- **⚡ 80% Reduction in Triage Time:** Instantaneous Zero-Touch OCR and NLP processing.
-- **🎯 87.5% Routing Accuracy:** Powered by `FinBERT`, an LLM specifically tuned for Wall-Street financial markets.
-- **⏱️ Dynamic SLA Tracking & Auto-Escalation:** Live UI countdowns strictly enforce 2-Hour SLAs for CRITICAL tickets. Breached tickets instantly flash red and are permanently locked to the #1 queue position until resolved.
-- **📉 Churn Prevention:** Automatically flags high-frustration investors for immediate retention action via our AI Frustration Index.
-- **🔒 Enterprise Security:** Secure document inspector keeps confidential PDFs and investor statements encrypted.
+## 🌟 Key Features
+- **Investor Dashboard:** Submit complaints and upload KYC/supporting documents seamlessly.
+- **AI Triage (FinBERT & Ollama):** Automatically assigns priority and generates concise summaries based on the investor's text.
+- **OCR Verification:** Automatically scans uploaded documents for matching account numbers using EasyOCR.
+- **L1 Maker & L2 Checker:** Strict Maker-Checker governance. L1 administrators triage and review; L2 administrators grant final approval.
+- **AWS LocalStack Integration:** A 100% free, localized environment for S3 (document storage), SES (email notifications), and SNS (SMS notifications).
 
 ---
 
-## 🛠️ Tech Stack & AI Architecture
+## 🏗️ Architecture Stack
 
-We built a **Universal Distributed Microservices Architecture** to separate heavy GPU inference from the lightweight React UI, completely Dockerized for massive scale.
+### High-Level Flow
+```mermaid
+graph TD
+    A[Investor] -->|Submits Ticket & File| B(React.js Frontend)
+    B -->|REST API| C{Node.js Express Backend}
+    C -->|Saves Data| D[(MongoDB)]
+    C -->|Saves Document & Sends Mail/SMS| E((AWS LocalStack S3/SES/SNS))
+    C -->|Requests AI Analysis| F[FastAPI AI Service]
+    F -->|Sentiment| G(FinBERT)
+    F -->|Summary| H(Ollama Llama 3)
+    F -->|Extracts Account #| I(EasyOCR)
+    F -.->|Results| C
+    J[L1 / L2 Admins] -->|Review & Approve| B
+```
 
-#### 🧠 1. Deep Learning Engine (Python/FastAPI)
-- **NLP Sentiment & Routing:** `ProsusAI/finbert` automatically tags ticket priority and frustration levels.
-- **Document Extraction:** `EasyOCR` & `PyTorch` neural networks extract raw text from image statements to perform cryptographic CRM Account Matching.
-- **Embedded Generative AI:** `Llama-3.2:1b` deployed within a sealed Ollama Container to generate human-readable L2 insights.
+### Frontend
+- **React.js (Vite)** with TailwindCSS for a sleek, glassmorphic UI.
+- React Router for dashboard navigation.
 
-#### 🌐 2. Secure Routing & Persistence (Node.js/Express)
-- Strictly enforces ACID multi-document transactions using MongoDB Replica Sets.
-- Generates permanent, tamper-proof `AuditLogs` linking Admin IDs to specific resolution actions.
+### Backend (Node.js Core)
+- **Express.js** providing RESTful APIs.
+- **MongoDB** with ACID transactions to strictly enforce Maker-Checker workflows and audit logs.
+- AWS SDK (v3) configured against LocalStack for zero-cost S3, SES, and SNS execution.
 
-#### 🖥️ 3. Wall-Street Grade UI (React/Vite)
-- **Sleek Dark Mode:** Built with premium Glassmorphism design aesthetics.
-- **Fluid Animations:** Component morphing and transitions via `Framer Motion`.
-- **Live Diagnostics:** Interactive SLA monitors, queues, and queue-depth charting.
+### AI Microservice (Python)
+- **FastAPI** serving dedicated AI pipelines.
+- **FinBERT** for financial sentiment analysis.
+- **EasyOCR** for extracting text from uploaded images.
+- **Ollama (Llama 3.2)** for generating intelligent summaries of long complaints.
 
 ---
 
-## 👨‍💻 Quickstart: Running the Application
+## 🚀 Getting Started
 
-This repository has been engineered to be **100% Environment Independent**. 
-**There are ZERO local models required.** Every single LLM, dependency, and script is securely embedded within the Docker cluster, gracefully falling back to CPU if an Nvidia GPU is unavailable.
+We use Docker Compose to completely containerize the application. **You do not need an AWS account, nor do you need to install Python or Node manually.**
 
-### Option 1: Full Local Deployment (For Judges & Presenters)
-*Runs the heavy PyTorch AI containers locally. Requires Docker Desktop.*
+### Prerequisites
+1. [Docker](https://www.docker.com/products/docker-desktop) installed and running.
+2. Ensure ports `5173` (Frontend), `5000` (Node), `8000` (Python AI), `27018` (MongoDB), `11434` (Ollama), and `4566` (LocalStack) are free.
+
+### Running the Application (CPU Mode)
+If you do not have a dedicated NVIDIA GPU, use the CPU configuration:
 
 ```bash
-# Clone the repository
-git clone https://github.com/ErAmitKumarBehera-AKB/kfintech-nexus-portal.git
-cd kfintech-nexus-portal
-
-# For NVIDIA GPUs (Hardware Accelerated AI)
-docker-compose up --build
-
-# For Local CPUs (Universal Fallback - No GPU needed!)
-docker-compose -f docker-compose.cpu.yml up --build
+docker-compose -f docker-compose.cpu.yml up --build -d
 ```
-*(Note: The initial Docker build will take ~10 minutes to download the Llama 3.2 and PyTorch neural weights. Subsequent boots are instant.)*
 
-### Option 2: The "Wi-Fi" Workflow (For Teammates without Docker)
-*Zero wait time. Connect directly to the Master AI Server over your local network.*
+### Running the Application (GPU Mode)
+If you have an NVIDIA GPU and Docker configured to use it (nvidia-container-toolkit):
 
-1. Ask the presenter hosting the Docker cluster for their IP Address (e.g., `http://192.168.1.5:8000`).
-2. Start the Node backend & React Frontend locally:
-    ```bash
-    # Terminal 1: Boot the Gateway
-    cd node_service 
-    export ML_SERVICE_URL="http://<THE_IP_ADDRESS>:8000"
-    npm install && npm start
-    
-    # Terminal 2: Boot the UI
-    cd frontend 
-    npm install && npm run dev
-    ```
+```bash
+docker-compose up --build -d
+```
 
 ---
 
-## 🛡️ Hackathon Stability Guarantees
-- **No Local Installs:** We have completely Dockerized the Ollama engine. Judges do NOT need to install Ollama locally to test Llama 3.2!
-- **Zero-Crash Pinning:** Docker environments are strictly pinned (`transformers==4.38.2`, `numpy<2.0.0`) preventing native binary clashes, ensuring flawless cross-platform execution on Windows, Mac, and Linux.
+## 🧪 Testing the Workflow
 
-<br/>
-<div align="center">
-  <p><i>Engineered with precision for the Hackathon. Ready to revolutionize compliance.</i></p>
-</div>
+Once the containers are up and running, follow these steps to test the portal:
+
+1. **Access the Portal:**
+   Open your browser and navigate to `http://localhost:5173`.
+
+2. **Submit a Ticket (Investor Role):**
+   - Fill out the complaint form.
+   - Upload a test image document.
+   - Click submit. Behind the scenes, the document is sent to LocalStack S3, and the AI backend processes the sentiment and OCR data.
+
+3. **L1 Maker Review:**
+   - Go to the **L1 Maker Desk** in the navigation bar.
+   - Locate the newly created ticket.
+   - Review the AI summary, sentiment score, and OCR verification.
+   - Move the ticket forward to L2 Approval.
+
+4. **L2 Checker Approval & Notifications:**
+   - Go to the **L2 Checker Desk**.
+   - Approve or Reject the ticket.
+   - *Check your terminal logs!* Run `docker logs kfintech_node_cpu` to see the LocalStack emulator firing off the SMS (SNS) and Email (SES) notifications!
+
+---
+
+## 🛑 Stopping the Environment
+
+To stop the containers and free up resources, simply run:
+
+```bash
+docker-compose -f docker-compose.cpu.yml down
+```
+*(Remove `-f docker-compose.cpu.yml` if you used the GPU configuration).*
+
+---
+
+### Additional Notes for the Team
+- **Database Persistence:** The `kfintech_mongo` container binds to a virtual network. If you tear down the volume, you will lose your historical ticket data.
+- **LocalStack Persistence:** We are using LocalStack Community Edition (`v2.3.2`) to prevent accidental PRO-tier lockouts. All emails and SMS messages are mocked locally and will print to the Node service console.
