@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  # FastAPI AI Models Backend
+  # FastAPI AI Models Backend (CPU ONLY)
   backend:
     build: 
       context: ./backend
       dockerfile: Dockerfile
-    container_name: kfintech_backend
+    container_name: kfintech_backend_cpu
     ports:
       - "8000:8000"
     environment:
@@ -14,20 +14,13 @@ services:
       - HOST=0.0.0.0
     volumes:
       - ./backend:/app
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     networks:
       - kfintech-network
 
   # Local MongoDB Replica Set for strict transactions
   mongodb:
     image: mongo:latest
-    container_name: kfintech_mongo
+    container_name: kfintech_mongo_cpu
     command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     ports:
       - "27018:27017"
@@ -39,7 +32,7 @@ services:
     build:
       context: ./node_service
       dockerfile: Dockerfile
-    container_name: kfintech_node
+    container_name: kfintech_node_cpu
     ports:
       - "5000:5000"
     environment:
@@ -57,7 +50,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: kfintech_frontend
+    container_name: kfintech_frontend_cpu
     ports:
       - "5173:5173"
     depends_on:

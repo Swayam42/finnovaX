@@ -8,9 +8,12 @@ export default {
     extend: {
       colors: {
         kfintech: {
-          primary: '#0033A0',
-          accent: '#FF6600',
-          bg: '#f3f4f6',
+          bg: '#0A0F1C',
+          card: '#131B2F',
+          border: '#1E293B',
+          primary: '#3B82F6',
+          accent: '#10B981',
+          danger: '#EF4444',
         }
       }
     },

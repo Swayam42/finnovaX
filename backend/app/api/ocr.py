@@ -12,6 +12,18 @@ class OCRVerificationResponse(BaseModel):
     extracted_text: list[str]
     message: str
 
+import easyocr
+import io
+
+# Load Reader globally to save time on subsequent requests
+try:
+    import torch
+    use_gpu = torch.cuda.is_available()
+    reader = easyocr.Reader(['en'], gpu=use_gpu)
+except Exception as e:
+    reader = None
+    print(f"Failed to load EasyOCR: {e}")
+
 @router.post("/verify-account", response_model=OCRVerificationResponse)
 async def verify_account(
     account_number: str = Form(..., description="The account number to verify"),
@@ -24,18 +36,23 @@ async def verify_account(
     # Read the file bytes
     image_bytes = await file.read()
     
-    # Mocking EasyOCR due to PyTorch Windows DLL load issues
-    extracted_text_blocks = [
-        "KFINTECH SECURE DOC",
-        f"ACCOUNT NO: {account_number}",
-        "DATE: 2026-06-21",
-        "STATUS: ACTIVE"
-    ]
+    extracted_text_blocks = []
+    if reader:
+        try:
+            # easyocr can read directly from bytes
+            results = reader.readtext(image_bytes)
+            # results is a list of tuples: (bbox, text, prob)
+            extracted_text_blocks = [text for (_, text, _) in results]
+        except Exception as e:
+            print(f"EasyOCR processing failed: {e}")
+            extracted_text_blocks = ["OCR Processing Failed"]
+    else:
+        extracted_text_blocks = ["OCR Engine Not Loaded"]
     
     # Exact string matching logic
-    combined_text = " ".join(extracted_text_blocks)
+    combined_text = " ".join(extracted_text_blocks).upper()
     clean_extracted = combined_text.replace(" ", "").replace("-", "")
-    clean_account = account_number.replace(" ", "").replace("-", "")
+    clean_account = account_number.upper().replace(" ", "").replace("-", "")
     
     account_found = clean_account in clean_extracted
     

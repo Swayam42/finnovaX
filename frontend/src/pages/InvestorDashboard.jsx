@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import apiClient from '../api/client';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UploadCloud, CheckCircle2, AlertCircle, Send, FileText } from 'lucide-react';
 
 const InvestorDashboard = () => {
     const [formData, setFormData] = useState({ title: '', category: 'Mutual Funds', description: '' });
@@ -32,17 +34,14 @@ const InvestorDashboard = () => {
         setStatus({ type: '', message: '' });
 
         try {
-            // Aggregating form fields into the expected complaintText structure
             const complaintText = `[${formData.category}] ${formData.title} - ${formData.description}`;
             
-            // Using FormData to support the EasyOCR document upload
             const payload = new FormData();
             payload.append('complaintText', complaintText);
             if (file) {
                 payload.append('file', file);
             }
 
-            // Submitting to the central API routing cluster
             await apiClient.post('/tickets', payload, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -54,7 +53,6 @@ const InvestorDashboard = () => {
                 message: 'Ticket successfully transmitted. It has been queued for immediate L1 Maker review.' 
             });
             
-            // Reset Form
             setFormData({ title: '', category: 'Mutual Funds', description: '' });
             setFile(null);
         } catch (error) {
@@ -69,33 +67,51 @@ const InvestorDashboard = () => {
     };
 
     return (
-        <div className="p-8 animate-fade-in max-w-4xl mx-auto">
-            <header className="mb-8 border-b-2 border-gray-200 pb-4">
-                <h1 className="text-4xl font-black text-kfintech-primary tracking-tight">Investor Service Portal</h1>
-                <p className="text-gray-500 mt-2 text-lg font-medium">Lodge a secure support ticket or mutual fund complaint.</p>
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="p-8 max-w-4xl mx-auto"
+        >
+            <header className="mb-10 text-center">
+                <h1 className="text-4xl font-black text-white tracking-tight drop-shadow-lg">Investor Service Portal</h1>
+                <p className="text-gray-400 mt-3 text-lg font-medium">Securely lodge a support ticket or mutual fund complaint.</p>
             </header>
 
-            {/* Tailwind Visual Feedback Alerts */}
-            {status.message && (
-                <div className={`mb-6 p-5 rounded-lg shadow-sm border-l-4 flex items-center gap-3 ${status.type === 'success' ? 'bg-green-50 border-green-500 text-green-800' : 'bg-red-50 border-red-500 text-red-800'}`}>
-                    {status.type === 'success' ? (
-                        <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                    ) : (
-                        <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    )}
-                    <div>
-                        <p className="font-extrabold text-sm uppercase tracking-wider">{status.type === 'success' ? 'Success' : 'Error'}</p>
-                        <p className="font-medium">{status.message}</p>
-                    </div>
-                </div>
-            )}
+            <AnimatePresence>
+                {status.message && (
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                        exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                        className={`mb-8 p-5 rounded-xl border flex items-center gap-4 shadow-lg backdrop-blur-md ${
+                            status.type === 'success' 
+                                ? 'bg-kfintech-accent/10 border-kfintech-accent/50 text-emerald-400' 
+                                : 'bg-kfintech-danger/10 border-kfintech-danger/50 text-red-400'
+                        }`}
+                    >
+                        {status.type === 'success' ? <CheckCircle2 className="w-8 h-8 flex-shrink-0" /> : <AlertCircle className="w-8 h-8 flex-shrink-0" />}
+                        <div>
+                            <p className="font-extrabold text-sm uppercase tracking-wider text-white">
+                                {status.type === 'success' ? 'Transmission Successful' : 'Transmission Error'}
+                            </p>
+                            <p className="font-medium mt-1">{status.message}</p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <form onSubmit={handleSubmit} className="glass-panel rounded-2xl shadow-2xl overflow-hidden relative">
+                {isSubmitting && (
+                    <div className="absolute inset-0 bg-kfintech-bg/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-kfintech-primary"></div>
+                    </div>
+                )}
+                
                 <div className="p-8 space-y-8">
-                    {/* Title & Category Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <label className="block text-xs font-extrabold text-gray-500 mb-2 uppercase tracking-widest">Ticket Title</label>
+                            <label className="block text-xs font-extrabold text-kfintech-primary mb-2 uppercase tracking-widest">Ticket Title</label>
                             <input 
                                 type="text"
                                 name="title"
@@ -103,16 +119,16 @@ const InvestorDashboard = () => {
                                 value={formData.title}
                                 onChange={handleChange}
                                 placeholder="Brief summary of your issue"
-                                className="w-full border-2 border-gray-200 rounded-xl p-4 text-gray-800 focus:ring-0 focus:border-kfintech-primary outline-none transition-colors shadow-sm bg-gray-50 focus:bg-white"
+                                className="w-full bg-kfintech-bg border border-kfintech-border rounded-xl p-4 text-white placeholder-gray-600 focus:ring-2 focus:ring-kfintech-primary/50 focus:border-kfintech-primary outline-none transition-all shadow-inner"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-extrabold text-gray-500 mb-2 uppercase tracking-widest">Category</label>
+                            <label className="block text-xs font-extrabold text-kfintech-primary mb-2 uppercase tracking-widest">Category</label>
                             <select 
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
-                                className="w-full border-2 border-gray-200 rounded-xl p-4 text-gray-800 focus:ring-0 focus:border-kfintech-primary outline-none transition-colors shadow-sm bg-gray-50 focus:bg-white cursor-pointer"
+                                className="w-full bg-kfintech-bg border border-kfintech-border rounded-xl p-4 text-white focus:ring-2 focus:ring-kfintech-primary/50 focus:border-kfintech-primary outline-none transition-all shadow-inner cursor-pointer appearance-none"
                             >
                                 <option value="Mutual Funds">Mutual Funds</option>
                                 <option value="Corporate Registry">Corporate Registry</option>
@@ -122,28 +138,28 @@ const InvestorDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Description Textarea */}
                     <div>
-                        <label className="block text-xs font-extrabold text-gray-500 mb-2 uppercase tracking-widest">Detailed Description</label>
+                        <label className="block text-xs font-extrabold text-kfintech-primary mb-2 uppercase tracking-widest">Detailed Description</label>
                         <textarea 
                             name="description"
                             required
-                            rows="6"
+                            rows="5"
                             value={formData.description}
                             onChange={handleChange}
-                            placeholder="Please provide as much detail as possible. Our AI engine will analyze this text to expedite your request..."
-                            className="w-full border-2 border-gray-200 rounded-xl p-4 text-gray-800 focus:ring-0 focus:border-kfintech-primary outline-none transition-colors shadow-sm resize-none bg-gray-50 focus:bg-white leading-relaxed"
+                            placeholder="Please provide as much detail as possible. Our AI engine will analyze this text..."
+                            className="w-full bg-kfintech-bg border border-kfintech-border rounded-xl p-4 text-white placeholder-gray-600 focus:ring-2 focus:ring-kfintech-primary/50 focus:border-kfintech-primary outline-none transition-all shadow-inner resize-none leading-relaxed"
                         ></textarea>
                     </div>
 
-                    {/* Drag and Drop Document Upload */}
                     <div>
-                        <label className="block text-xs font-extrabold text-gray-500 mb-2 uppercase tracking-widest">Supporting Documents (For OCR Verification)</label>
-                        <div 
+                        <label className="block text-xs font-extrabold text-kfintech-primary mb-2 uppercase tracking-widest">Supporting Documents (Optional)</label>
+                        <motion.div 
+                            whileHover={{ scale: 1.01, borderColor: '#3B82F6' }}
+                            whileTap={{ scale: 0.99 }}
                             onDragOver={handleDragOver}
                             onDrop={handleFileDrop}
                             onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-gray-300 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-kfintech-primary transition-all group bg-gray-50/50"
+                            className="border-2 border-dashed border-kfintech-border rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer bg-kfintech-bg/50 hover:bg-kfintech-bg transition-colors group relative overflow-hidden"
                         >
                             <input 
                                 type="file" 
@@ -152,39 +168,46 @@ const InvestorDashboard = () => {
                                 onChange={(e) => setFile(e.target.files[0])}
                                 accept="image/jpeg, image/png, application/pdf"
                             />
-                            <div className="bg-white p-4 rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                                <svg className="w-10 h-10 text-gray-400 group-hover:text-kfintech-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
+                            
+                            <div className="bg-kfintech-card p-4 rounded-full shadow-lg mb-4 border border-kfintech-border group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all">
+                                {file ? <FileText className="w-10 h-10 text-kfintech-accent" /> : <UploadCloud className="w-10 h-10 text-gray-500 group-hover:text-kfintech-primary" />}
                             </div>
                             
                             {file ? (
-                                <div className="text-center">
-                                    <p className="text-kfintech-primary font-extrabold text-lg">{file.name}</p>
-                                    <p className="text-gray-500 text-sm mt-1">Ready for upload</p>
+                                <div className="text-center z-10">
+                                    <p className="text-kfintech-accent font-extrabold text-lg drop-shadow-md">{file.name}</p>
+                                    <p className="text-gray-400 text-sm mt-1">Ready for upload</p>
                                 </div>
                             ) : (
-                                <div className="text-center">
-                                    <p className="text-gray-800 font-bold text-lg mb-1">Click to upload or drag and drop</p>
+                                <div className="text-center z-10">
+                                    <p className="text-white font-bold text-lg mb-1">Click to upload or drag and drop</p>
                                     <p className="text-sm text-gray-500 font-medium">JPEG, PNG, or PDF up to 5MB</p>
                                 </div>
                             )}
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
 
-                {/* Submit Action Footer */}
-                <div className="bg-gray-50/80 p-6 border-t border-gray-100 flex justify-end">
-                    <button 
+                <div className="bg-kfintech-bg/80 p-6 flex justify-end border-t border-kfintech-border/50">
+                    <motion.button 
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         type="submit" 
                         disabled={isSubmitting}
-                        className={`px-10 py-4 bg-kfintech-primary text-white font-extrabold rounded-xl shadow-md transition-all uppercase tracking-widest text-sm ${isSubmitting ? 'opacity-70 cursor-wait' : 'hover:bg-blue-800 hover:shadow-xl hover:-translate-y-0.5 focus:ring-4 focus:ring-blue-300'}`}
+                        className={`flex items-center gap-2 px-10 py-4 bg-kfintech-primary text-white font-extrabold rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all uppercase tracking-widest text-sm ${
+                            isSubmitting ? 'opacity-70 cursor-wait' : 'hover:bg-blue-600 hover:shadow-[0_0_25px_rgba(59,130,246,0.7)]'
+                        }`}
                     >
-                        {isSubmitting ? 'Processing AI Triage...' : 'Lodge Ticket Securely'}
-                    </button>
+                        {isSubmitting ? 'Processing AI Triage...' : (
+                            <>
+                                Lodge Ticket Securely
+                                <Send className="w-4 h-4" />
+                            </>
+                        )}
+                    </motion.button>
                 </div>
             </form>
-        </div>
+        </motion.div>
     );
 };
 

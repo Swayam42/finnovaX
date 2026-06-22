@@ -35,7 +35,8 @@ exports.verifyInvestorDocument = async (req, res) => {
         // Forward the image buffer to the internal EasyOCR Python backend
         let aiPayload;
         try {
-            const aiResponse = await axios.post('http://127.0.0.1:8000/ocr/verify-account', formData, {
+            const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+            const aiResponse = await axios.post(`${mlServiceUrl}/ocr/verify-account`, formData, {
                 headers: {
                     ...formData.getHeaders()
                 }

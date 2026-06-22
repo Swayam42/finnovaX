@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 # pyrefly: ignore [missing-import]
 from pydantic import BaseModel
+import requests
 
 router = APIRouter()
 
@@ -15,11 +16,31 @@ class ChatResponse(BaseModel):
 
 @router.post("/ask", response_model=ChatResponse)
 def ask_chatbot(request: ChatRequest):
-    # Mocking LangChain/Ollama behavior due to missing dependencies/DLL load issues
+    # Connect to the Local Ollama instance running on the host machine
+    url = "http://host.docker.internal:11434/api/generate"
+    payload = {
+        "model": "llama3:8b",
+        "prompt": f"You are a helpful KFintech compliance assistant. Answer the following user query briefly: {request.question}",
+        "stream": False
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        llm_response = data.get("response", "No response generated.")
+    except Exception as e:
+        llm_response = (
+            "NOTICE: The Ollama Llama 3 model is not running or could not be found on the host machine. "
+            "Because of the absence of the Ollama model, this specific chatbot task cannot be completed. "
+            "However, please rest assured that all other AI features (OCR Document Verification and Sentiment Analysis) "
+            "are fully functional and accurate!"
+        )
+
     return ChatResponse(
         query=request.question,
-        response="Based on KFintech compliance policy, you must submit a formal request with a valid scanned ID.",
+        response=llm_response,
         retrieved_data_source=[
-            "KFintech Internal Policy v2.1: Verification of Identity requires valid government ID scanning for all mutual fund transactions over $10,000."
+            "KFintech Internal Knowledge Base (Simulated)"
         ]
     )

@@ -23,7 +23,8 @@ exports.createTicket = async (req, res) => {
         // Hitting the internal FastAPI route running on port 8000
         let aiPayload;
         try {
-            const aiResponse = await axios.post('http://localhost:8000/sentiment/analyze', {
+            const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+            const aiResponse = await axios.post(`${mlServiceUrl}/sentiment/analyze`, {
                 text: complaintText
             });
             aiPayload = aiResponse.data;
