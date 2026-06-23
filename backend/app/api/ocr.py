@@ -49,19 +49,29 @@ async def verify_account(
     else:
         extracted_text_blocks = ["OCR Engine Not Loaded"]
     
+    import re
+    import difflib
+
     # Character normalization and fuzzy matching logic
     combined_text = " ".join(extracted_text_blocks).upper()
-    clean_extracted = combined_text.replace(" ", "").replace("-", "")
-    clean_account = account_number.upper().replace(" ", "").replace("-", "")
     
-    # Normalize common OCR mistakes
-    def normalize_ocr(text):
-        return text.replace("O", "0").replace("I", "1").replace("L", "1").replace("S", "5").replace("B", "8")
-        
-    norm_extracted = normalize_ocr(clean_extracted)
-    norm_account = normalize_ocr(clean_account)
+    # Strip everything except alphanumeric characters
+    clean_extracted = re.sub(r'[^A-Z0-9]', '', combined_text)
+    clean_account = re.sub(r'[^A-Z0-9]', '', account_number.upper())
     
-    account_found = clean_account in clean_extracted or norm_account in norm_extracted
+    # First do exact match check
+    account_found = clean_account in clean_extracted
+    
+    # If not exactly found, perform fuzzy matching (sliding window over the extracted text)
+    if not account_found and len(clean_account) > 0 and len(clean_extracted) >= len(clean_account):
+        window_size = len(clean_account)
+        # Check every window of length equal to account_number or slightly larger
+        for i in range(len(clean_extracted) - window_size + 1):
+            window = clean_extracted[i:i+window_size+1] # allow +1 for extra inserted char
+            ratio = difflib.SequenceMatcher(None, clean_account, window).ratio()
+            if ratio >= 0.85:
+                account_found = True
+                break
     
     if account_found:
         message = f"Account number '{account_number}' successfully verified in document."

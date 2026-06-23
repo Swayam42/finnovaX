@@ -170,7 +170,14 @@ const L1MakerDesk = () => {
                                     )}
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="font-mono text-xs text-gray-400 font-semibold">#{ticket._id.substring(18)}</span>
-                                        <PriorityBadge priority={ticket.assignedPriority} />
+                                        <div className="flex gap-2">
+                                            {ticket.isPotentialFraud && (
+                                                <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm bg-orange-500/20 text-orange-400 border border-orange-500/50 animate-pulse">
+                                                    ⚠️ FRAUD
+                                                </span>
+                                            )}
+                                            <PriorityBadge priority={ticket.assignedPriority} />
+                                        </div>
                                     </div>
                                     <p className="text-sm font-medium text-gray-200 line-clamp-2 leading-snug group-hover:text-white transition-colors">{ticket.complaintText}</p>
                                     <div className="mt-3 flex justify-between items-center text-xs text-gray-500 font-semibold">
@@ -203,9 +210,16 @@ const L1MakerDesk = () => {
                                     <h3 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-3">
                                         Ticket Processing Workspace
                                     </h3>
-                                    <span className="text-sm font-mono bg-kfintech-primary/10 border border-kfintech-primary/30 px-3 py-1 rounded text-blue-300 font-bold shadow-inner">
-                                        ID: {selectedTicket._id}
-                                    </span>
+                                    <div className="flex gap-3 items-center">
+                                        {selectedTicket.isPotentialFraud && (
+                                            <span className="text-sm font-mono bg-orange-500/20 border border-orange-500/50 px-3 py-1 rounded text-orange-400 font-bold shadow-inner animate-pulse">
+                                                ⚠️ POTENTIAL FRAUD DETECTED
+                                            </span>
+                                        )}
+                                        <span className="text-sm font-mono bg-kfintech-primary/10 border border-kfintech-primary/30 px-3 py-1 rounded text-blue-300 font-bold shadow-inner">
+                                            ID: {selectedTicket._id}
+                                        </span>
+                                    </div>
                                 </div>
                                 
                                 <div className="mb-6 grid grid-cols-2 gap-4">

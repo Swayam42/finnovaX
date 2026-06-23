@@ -25,7 +25,7 @@ exports.createTicket = async (req, res) => {
         const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
         
         // --- A. FinBERT Sentiment ---
-        let aiPayload = { priority: 'NORMAL', score: 0.5 };
+        let aiPayload = { priority: 'NORMAL', score: 0.5, fraud_alert: false };
         try {
             const aiResponse = await axios.post(`${mlServiceUrl}/sentiment/analyze`, { text: complaintText });
             aiPayload = aiResponse.data;
@@ -37,13 +37,23 @@ exports.createTicket = async (req, res) => {
         let aiSummary = [];
         try {
             const chatResponse = await axios.post(`${mlServiceUrl}/chatbot/ask`, { 
-                question: `Summarize this investor complaint into exactly 3 short bullet points. Provide ONLY the bullets starting with dashes, nothing else: ${complaintText}`
+                question: `Summarize this investor complaint into exactly 3 short bullet points. Provide the output ONLY as a JSON object with a single key "bullets" containing an array of exactly 3 strings. Example: {"bullets": ["point 1", "point 2", "point 3"]}. Do not include any other text. Complaint: ${complaintText}`,
+                format: 'json'
             });
             const rawResponse = chatResponse.data.response;
-            // Parse response into array of strings, rigorously stripping filler and numbering
-            aiSummary = rawResponse.split('\n')
-                .map(line => line.replace(/^(\d+\.|[-*•])\s*/g, '').replace(/\*+/g, '').trim())
-                .filter(line => line.length > 5 && !line.toLowerCase().includes("here are") && !line.toLowerCase().includes("bullet points"));
+            
+            // Try to parse the JSON string
+            try {
+                const parsed = JSON.parse(rawResponse);
+                if (parsed && Array.isArray(parsed.bullets)) {
+                    aiSummary = parsed.bullets;
+                }
+            } catch (e) {
+                // Fallback if JSON parsing fails despite the prompt
+                aiSummary = rawResponse.split('\n')
+                    .map(line => line.replace(/^(\d+\.|[-*•])\s*/g, '').replace(/\*+/g, '').trim())
+                    .filter(line => line.length > 5 && !line.toLowerCase().includes("here are") && !line.toLowerCase().includes("bullet points"));
+            }
                 
             // Truncate strictly to 3 bullets
             if (aiSummary.length > 3) aiSummary = aiSummary.slice(0, 3);
@@ -112,6 +122,7 @@ exports.createTicket = async (req, res) => {
             aiSummary,
             ocrExtractedText,
             ocrMatchVerified,
+            isPotentialFraud: aiPayload.fraud_alert || false,
             status: 'OPEN'
         });
 
@@ -127,6 +138,7 @@ exports.createTicket = async (req, res) => {
                 assignedPriority: newTicket.assignedPriority,
                 aiSentimentScore: newTicket.aiSentimentScore,
                 hasOCR: !!ocrExtractedText,
+                isPotentialFraud: newTicket.isPotentialFraud,
                 note: 'Ticket created and initially triaged by AI.'
             }
         });

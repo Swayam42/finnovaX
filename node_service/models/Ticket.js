@@ -47,6 +47,10 @@ const TicketSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    isPotentialFraud: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
         enum: ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'L1_REVIEW', 'L2_APPROVAL', 'APPROVED', 'REJECTED'],

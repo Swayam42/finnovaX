@@ -1,11 +1,11 @@
-version: '3.8'
+
 
 services:
   # FastAPI AI Models Backend (CPU ONLY)
   backend:
     build: 
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cpu
     container_name: kfintech_backend_cpu
     ports:
       - "8000:8000"

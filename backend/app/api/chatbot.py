@@ -8,6 +8,7 @@ router = APIRouter()
 
 class ChatRequest(BaseModel):
     question: str
+    format: str = None
 
 class ChatResponse(BaseModel):
     query: str
@@ -23,6 +24,9 @@ def ask_chatbot(request: ChatRequest):
         "prompt": f"You are a helpful KFintech compliance assistant. Answer the following user query briefly: {request.question}",
         "stream": False
     }
+    
+    if request.format == "json":
+        payload["format"] = "json"
     
     try:
         response = requests.post(url, json=payload, timeout=30)

@@ -174,7 +174,14 @@ const L2CheckerDesk = () => {
                                         <div className="font-mono text-sm text-gray-300 font-semibold mt-1">#{ticket._id}</div>
                                     </div>
                                     <div className="flex flex-col items-end gap-2">
-                                        <Badge priority={ticket.assignedPriority} />
+                                        <div className="flex gap-2">
+                                            {ticket.isPotentialFraud && (
+                                                <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest shadow-sm flex items-center gap-1 bg-orange-500/20 text-orange-400 border border-orange-500/50 animate-pulse">
+                                                    <AlertTriangle className="w-3 h-3" /> POTENTIAL FRAUD
+                                                </span>
+                                            )}
+                                            <Badge priority={ticket.assignedPriority} />
+                                        </div>
                                         <div className="text-xs font-mono font-bold tracking-tight">
                                             SLA: {calculateSLA(ticket.createdAt, ticket.assignedPriority)}
                                         </div>
