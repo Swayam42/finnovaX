@@ -114,6 +114,22 @@ docker exec kfintech_mongo mongosh --eval "rs.initiate()"
 - **Zero-Cost Prototyping** leveraging open-source LLMs (Llama 3) and LocalStack.
 - **100% Audit Compliance** via immutable Maker-Checker logs.
 
+---
+
+## 🤖 Automated End-to-End Simulation (For Judges)
+If you don't want to manually click through the UI to test the workflow, we built an automated agent script that simulates the entire lifecycle (Ticket Creation -> L1 Escalation -> L2 Approval -> SMS/Email Dispatch). 
+
+To run the simulator, execute this command in your terminal:
+```bash
+docker exec kfintech_node npm run test:e2e
+```
+Then, view the Docker logs to see the AWS Mock SMS and Email payloads:
+```bash
+docker logs kfintech_node --tail 20
+```
+
+---
+
 ## 🛑 Teardown
 ```bash
 docker-compose down

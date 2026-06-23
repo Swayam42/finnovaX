@@ -14,15 +14,12 @@ async function runEndToEnd() {
     }
 
     const tickets = [
-        { name: "John Doe", text: "My portfolio crashed! Urgent help needed.", acc: "1111" },
-        { name: "Jane Smith", text: "I love the new dashboard UI.", acc: "2222" },
-        { name: "Alice Brown", text: "Please update my nominee details.", acc: "3333" },
-        { name: "Bob White", text: "The app is logging me out constantly.", acc: "4444" }
+        { name: "John Doe", text: "My portfolio crashed! Urgent help needed.", acc: "1111" }
     ];
 
     for (let i = 0; i < tickets.length; i++) {
         console.log(`\n========================================`);
-        console.log(`🎟️ Creating Ticket ${i + 1} for ${tickets[i].name}...`);
+        console.log(`🚀 Creating Ticket ${i + 1} for ${tickets[i].name}...`);
         
         try {
             // 1. INVESTOR DESK: Create Ticket
@@ -31,12 +28,6 @@ async function runEndToEnd() {
             form.append('investorName', tickets[i].name);
             form.append('accountNumber', tickets[i].acc);
             
-            // Dummy buffer for S3 document upload
-            // form.append('file', Buffer.from('Dummy KYC Document'), {
-            //     filename: `kyc_doc_${i}.txt`,
-            //     contentType: 'text/plain',
-            // });
-
             const res = await axios.post("http://localhost:5000/api/tickets", form, {
                 headers: form.getHeaders()
             });
@@ -45,13 +36,18 @@ async function runEndToEnd() {
             console.log(`✅ Ticket Created! ID: ${ticketId}`);
             console.log(`   - AI Sentiment: ${res.data.ticket.aiSentimentScore}`);
             console.log(`   - AI Priority: ${res.data.ticket.assignedPriority}`);
-            console.log(`   - S3 Document URL: ${res.data.ticket.documentUrl}`);
 
-            console.log(`✅ L2 Checker Approved!`);
+            // 2. L1 MAKER DESK: Escalate
+            await axios.put('http://localhost:5000/api/admin/escalate/' + ticketId);
+            console.log(`✅ L1 Maker Escalated Ticket to L2!`);
+            
+            // 3. L2 CHECKER DESK: Approve
+            await axios.post('http://localhost:5000/api/l2/finalize', { ticketId: ticketId, action: 'APPROVE' });
+            console.log(`✅ L2 Checker Approved & Finalized!`);
             
             // Wait 1s for background AWS emails/sms to fire
             await new Promise(r => setTimeout(r, 1000));
-            console.log(`📩 AWS LocalStack Mock SMS & Email Sent!`);
+            console.log(`📧 AWS LocalStack Mock SMS & Email Sent! Check your docker logs.`);
             
         } catch (err) {
             console.error(`❌ Error on Ticket ${i + 1}:`, err.response ? err.response.data : err.message);
