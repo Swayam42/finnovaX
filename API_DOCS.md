@@ -2,12 +2,12 @@
 
 Welcome to the **KFintech AI Models API**. This documentation provides the exact JSON contracts, request structures, and response schemas required for the Node.js and React teams to integrate with our backend AI services.
 
-**Hackathon Business Impact:** By decoupling our AI models into a dedicated FastAPI microservice, we achieve a **99% reduction in manual triage effort**. This API empowers the orchestrator to resolve unstructured text and image data instantly using CUDA-accelerated inference.
+**Hackathon Business Impact:** By decoupling our AI models into a dedicated FastAPI microservice, we achieve a **99% reduction in manual triage effort**. This API empowers the orchestrator to resolve unstructured text and image data instantly using CUDA-accelerated inference (with graceful CPU fallbacks).
 
 The API exposes three primary AI capabilities:
-1. **Priority Triage** using fine-tuned DistilBERT models (Identifying legal/threat risks).
-2. **Zero-Touch Verification** using EasyOCR (Automating KYC/Account validation).
-3. **RAG Chatbot** backed by a local Llama 3 instance and ChromaDB (Deflecting Level 0 support queries).
+1. **Priority & Fraud Triage** using the industry-standard `ProsusAI/finbert` model.
+2. **Zero-Touch Document Verification** using EasyOCR with advanced fuzzy matching.
+3. **Structured AI Summarizer** backed by a local Llama 3 instance to strictly output JSON bullet points.
 
 > [!NOTE]
 > Ensure that your API Gateway or reverse proxy maps the external `/api/ai/*` paths defined below to the internal FastAPI routes appropriately.
@@ -16,7 +16,7 @@ The API exposes three primary AI capabilities:
 
 ## 1. Sentiment & Priority Triage
 
-Evaluates the sentiment of a customer complaint or message using a fine-tuned DistilBERT model. If the sentiment is negative, the API flags the priority as `CRITICAL` for immediate escalation.
+Evaluates the sentiment of a customer complaint or message using the `ProsusAI/finbert` model. It calculates a sophisticated Frustration Index. Crucially, it proactively flags the priority as `CRITICAL` and triggers a `fraud_alert` if severe threats or scam-related keywords are detected.
 
 **Endpoint:** `POST /api/ai/sentiment`
 
@@ -28,7 +28,7 @@ Evaluates the sentiment of a customer complaint or message using a fine-tuned Di
 
 ```json
 {
-  "text": "I was charged a management fee twice this month on my index fund. I need this reversed immediately, your system is broken and stealing my money."
+  "text": "I was charged a management fee twice this month on my index fund. I need this reversed immediately, your system is broken and stealing my money. This is a scam!"
 }
 ```
 
@@ -39,8 +39,9 @@ Evaluates the sentiment of a customer complaint or message using a fine-tuned Di
 ```json
 {
   "sentiment": "NEGATIVE",
-  "score": 0.9984,
-  "priority": "CRITICAL"
+  "score": 1.0,
+  "priority": "CRITICAL",
+  "fraud_alert": true
 }
 ```
 
@@ -54,7 +55,7 @@ Evaluates the sentiment of a customer complaint or message using a fine-tuned Di
 
 ## 2. OCR Zero-Touch Verification
 
-Accepts an uploaded image (e.g., a cheque, bank statement) and an account number. It uses EasyOCR to extract all text from the document and performs robust string-matching to verify if the account number exists within the document.
+Accepts an uploaded image (e.g., a cheque, bank statement) and an account number. It uses EasyOCR to extract all text from the document. It performs advanced string normalization (regex) and fuzzy-matching (`difflib`) to verify if the account number exists within the document, tolerating up to a 15% OCR discrepancy.
 
 **Endpoint:** `POST /api/ai/ocr-verify`
 
@@ -88,7 +89,7 @@ curl -X POST "http://localhost:8000/api/ai/ocr-verify" \
     "KFintech",
     "Statement of Account",
     "Account No:",
-    "123-456 789",
+    "1Z3-456 789",
     "Balance: $10,000"
   ],
   "message": "Account number '123456789' successfully verified in document."
@@ -103,9 +104,9 @@ curl -X POST "http://localhost:8000/api/ai/ocr-verify" \
 
 ---
 
-## 3. Llama 3 RAG Chatbot
+## 3. Llama 3 Structured Summarizer
 
-A highly compliant RAG (Retrieval-Augmented Generation) chatbot. It embeds the user's query, retrieves the most relevant KFintech SLA policies from ChromaDB, and forces a local Llama 3 instance to answer the query *strictly* using the retrieved context to prevent hallucination.
+A highly compliant AI summarization endpoint. It passes the user's grievance to a local Llama 3 instance and enforces a strict structured format. It guarantees that the output contains exactly 3 concise bullet points formatted as parseable JSON, preventing conversational hallucinations.
 
 **Endpoint:** `POST /api/ai/chat`
 
@@ -117,7 +118,8 @@ A highly compliant RAG (Retrieval-Augmented Generation) chatbot. It embeds the u
 
 ```json
 {
-  "question": "What is the notice period to cancel a SIP?"
+  "question": "Summarize this ticket: I was charged a management fee twice this month on my index fund...",
+  "format": "json"
 }
 ```
 
@@ -127,10 +129,10 @@ A highly compliant RAG (Retrieval-Augmented Generation) chatbot. It embeds the u
 
 ```json
 {
-  "query": "What is the notice period to cancel a SIP?",
-  "response": "According to the Systematic Investment Plan (SIP) Cancellation policy, SIP cancellation requests require a strict 30-day notice period prior to the next scheduled deduction date.",
+  "query": "Summarize this ticket: I was charged a management fee twice this month on my index fund...",
+  "response": "{\"bullets\": [\"The investor was charged a management fee twice this month.\", \"The investor expects an immediate reversal of the duplicate charge.\", \"The investor expressed severe frustration, accusing the platform of theft and scam.\"]}",
   "retrieved_data_source": [
-    "4. Systematic Investment Plan (SIP) Cancellation: SIP cancellation requests require a strict 30-day notice period prior to the next scheduled deduction date."
+    "KFintech Internal Knowledge Base (Simulated)"
   ]
 }
 ```
