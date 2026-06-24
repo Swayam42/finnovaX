@@ -110,6 +110,54 @@ docker-compose -f docker-compose.cpu.yml up --build -d
 
 ---
 
+## 🧪 Manual End-to-End Testing Guide
+To manually walk through the entire ticket lifecycle (Ticket Creation -> L1 Escalation -> L2 Approval -> SMS/Email Dispatch), follow these steps:
+
+### 1. Initialize the Mock AWS Environment
+Before creating a ticket, you must create the mock S3 bucket and prove that the AWS LocalStack (SNS/SES) is working for Emails and SMS.
+```bash
+docker exec -it kfintech_node node test_localstack.js
+```
+*(You should see green checkmarks in the terminal showing that an S3 bucket was created, and an SMS/Email was sent).*
+
+### 2. Demonstrate AI Triage in the UI
+Open your browser and navigate to `http://localhost:5173`. Create a ticket using one of these examples to show dynamic AI routing:
+
+* **Example 1: The "Normal" Support Ticket**
+  * **Title:** `[Account Access] Cannot download statements`
+  * **Description:** `"Hello, I need help downloading my annual statements. The download button doesn't seem to be working on my dashboard."`
+  * *Result:* AI assigns **NORMAL** priority and routes it to the standard queue.
+
+* **Example 2: The "High Frustration" Ticket (CRITICAL)**
+  * **Title:** `[Customer Service] Worst experience ever`
+  * **Description:** `"This is completely unacceptable! I have been waiting for weeks and if you don't fix this today I am going to contact a lawyer."`
+  * *Result:* The FinBERT AI detects negative sentiment, and the system catches the words "unacceptable" and "lawyer". It applies a Frustration Multiplier and escalates to **CRITICAL**.
+
+* **Example 3: The "Potential Fraud" Ticket (CRITICAL + BADGE)**
+  * **Title:** `[URGENT] Funds Stolen from account`
+  * **Description:** `"Help! Someone hacked into my account and transferred out my mutual funds. I think my identity was stolen."`
+  * *Result:* The backend scans for criminal keywords ("hacked", "stolen"), instantly overriding the AI to trigger a **⚠️ POTENTIAL FRAUD** badge and L2 escalation.
+
+### 3. Demonstrate the L2 Checker Approval
+1. Navigate to the **L2 Checker View** (`http://localhost:5173/l2-checker`).
+2. Show the escalated ticket sitting in the queue.
+3. Click the **Approve & Resolve** button. This triggers an ACID-compliant MongoDB transaction that permanently closes the ticket.
+
+### 4. Verify Final Email & SMS Logs
+In your terminal, run this command to show that the system generated the background SMS and Email exactly when you clicked "Approve":
+```bash
+docker logs --tail 20 kfintech_node
+```
+You will see `[AWS LocalStack] 📧 Email sent` and `[AWS LocalStack] 📲 SMS sent`.
+
+### ⚠️ Troubleshooting
+If your Node container throws `ECONNREFUSED` when hitting the AI backend, it is a Docker DNS caching issue (usually happens if you restarted the Python backend manually). Fix it instantly by restarting the Node container:
+```bash
+docker restart kfintech_node
+```
+
+---
+
 ## 🤖 Automated End-to-End Simulation (For Judges)
 If you don't want to manually click through the UI to test the workflow, we built an automated agent script that simulates the entire lifecycle (Ticket Creation -> L1 Escalation -> L2 Approval -> SMS/Email Dispatch). 
 
