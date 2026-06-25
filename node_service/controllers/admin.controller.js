@@ -203,3 +203,80 @@ exports.rejectTicket = async (req, res) => {
         return res.status(500).json({ error: err.message });
     }
 };
+
+// SuperAdmin Endpoint: Metrics
+exports.getSystemMetrics = async (req, res) => {
+    try {
+        const totalTickets = await Ticket.countDocuments();
+        const totalInvestors = await User.countDocuments({ role: 'INVESTOR' });
+        
+        const openTickets = await Ticket.countDocuments({ status: 'OPEN' });
+        const resolvedTickets = await Ticket.countDocuments({ status: 'RESOLVED' });
+        const rejectedTickets = await Ticket.countDocuments({ status: 'REJECTED' });
+
+        const rejectionRate = totalTickets > 0 ? (rejectedTickets / totalTickets) * 100 : 0;
+        const resolutionRate = totalTickets > 0 ? (resolvedTickets / totalTickets) * 100 : 0;
+
+        const serviceTypeDataRaw = await Ticket.aggregate([
+            { $group: { _id: "$serviceType", count: { $sum: 1 } } }
+        ]);
+        const serviceTypeData = serviceTypeDataRaw.map(item => ({ name: item._id || 'UNKNOWN', value: item.count }));
+
+        const statusDataRaw = await Ticket.aggregate([
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]);
+        const statusData = statusDataRaw.map(item => ({ name: item._id || 'UNKNOWN', value: item.count }));
+
+        return res.status(200).json({
+            totalTickets,
+            totalInvestors,
+            rejectionRate,
+            resolutionRate,
+            openTickets,
+            serviceTypeData,
+            statusData
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
+// SuperAdmin Endpoint: Users
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().select('-passwordHash').sort({ createdAt: -1 });
+        return res.status(200).json({ users });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
+// SuperAdmin Endpoint: All Tickets
+exports.getAllTickets = async (req, res) => {
+    try {
+        const tickets = await Ticket.find()
+            .select('investorName serviceType status assignedPriority createdAt slaTimeline aiSentimentScore')
+            .sort({ createdAt: -1 });
+        return res.status(200).json({ tickets });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
+// SuperAdmin Endpoint: Flagged Tickets
+exports.getFlaggedTickets = async (req, res) => {
+    try {
+        const tickets = await Ticket.find({
+            $or: [
+                { isPotentialFraud: true },
+                { assignedPriority: 'CRITICAL' },
+                { status: 'ESCALATED' }
+            ]
+        })
+        .select('investorName serviceType status assignedPriority isPotentialFraud title description createdAt')
+        .sort({ createdAt: -1 });
+        return res.status(200).json({ tickets });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};

@@ -15,10 +15,7 @@ const NAV_CONFIG = {
         { path: '/l2-checker', label: 'L2 Checker Desk', role: 'ADMIN_L2', icon: <ShieldCheck className="w-4 h-4" /> }
     ],
     ADMIN_SUPER: [
-        { path: '/admin',      label: 'Admin Center',    role: 'ADMIN_SUPER', icon: <Crown className="w-4 h-4" /> },
-        { path: '/investor',   label: 'Investor View',   role: 'INVESTOR',    icon: <User className="w-4 h-4" /> },
-        { path: '/l1-maker',   label: 'L1 Maker View',   role: 'ADMIN_L1',    icon: <ShieldAlert className="w-4 h-4" /> },
-        { path: '/l2-checker', label: 'L2 Checker View', role: 'ADMIN_L2',    icon: <ShieldCheck className="w-4 h-4" /> }
+        { path: '/admin',      label: 'SuperAdmin Dashboard',    role: 'ADMIN_SUPER', icon: <Crown className="w-4 h-4" /> }
     ]
 };
 

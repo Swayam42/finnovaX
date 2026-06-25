@@ -16,4 +16,20 @@ router.put('/escalate/:id', authenticate, authorize('ADMIN_L1', 'ADMIN_SUPER'), 
 // L1 Maker desk and Super Admins can reject a ticket
 router.put('/reject/:id', authenticate, authorize('ADMIN_L1', 'ADMIN_SUPER'), adminController.rejectTicket);
 
+// Route: GET /api/admin/metrics
+// SuperAdmin dashboard metrics
+router.get('/metrics', authenticate, authorize('ADMIN_SUPER'), adminController.getSystemMetrics);
+
+// Route: GET /api/admin/users
+// SuperAdmin user management
+router.get('/users', authenticate, authorize('ADMIN_SUPER'), adminController.getAllUsers);
+
+// Route: GET /api/admin/tickets
+// SuperAdmin all tickets
+router.get('/tickets', authenticate, authorize('ADMIN_SUPER'), adminController.getAllTickets);
+
+// Route: GET /api/admin/tickets/flagged
+// SuperAdmin flagged tickets
+router.get('/tickets/flagged', authenticate, authorize('ADMIN_SUPER'), adminController.getFlaggedTickets);
+
 module.exports = router;
