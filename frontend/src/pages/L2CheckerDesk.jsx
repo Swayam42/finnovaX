@@ -217,7 +217,7 @@ const L2CheckerDesk = () => {
                                             Request Description
                                         </h4>
                                         <p className="text-gray-200 text-md bg-kfintech-bg/50 p-5 rounded-xl border border-kfintech-border leading-relaxed font-medium italic shadow-inner">
-                                            "{stripPrefix(ticket.complaintText)}"
+                                            "{stripPrefix(ticket.description || ticket.title)}"
                                         </p>
                                         {/* Service Metadata Summary — shows type-specific submitted fields */}
                                         {ticket.serviceMetadata && Object.keys(ticket.serviceMetadata).length > 0 && (() => {
@@ -297,35 +297,48 @@ const L2CheckerDesk = () => {
                                                 </div>
 
                                                 {/* Document */}
-                                                <div className={`flex items-center gap-3 p-4 rounded-xl border ${
-                                                    ticket.documentName
-                                                        ? 'bg-kfintech-primary/5 border-kfintech-primary/20'
-                                                        : 'bg-kfintech-bg/40 border-kfintech-border/40'
+                                                <div className={`p-4 rounded-xl border border-kfintech-border/50 bg-kfintech-card/30 flex items-start gap-4 transition-colors ${
+                                                    ticket.documents?.[0]?.name ? 'hover:bg-kfintech-card/50 hover:border-kfintech-border' : 'opacity-50 grayscale'
                                                 }`}>
-                                                    <FileText className={`w-5 h-5 shrink-0 ${
-                                                        ticket.documentName ? 'text-kfintech-primary' : 'text-gray-600'
-                                                    }`} />
-                                                    <div>
-                                                        <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest">Attached Document</p>
-                                                        <p className={`text-sm font-medium ${
-                                                            ticket.documentName ? 'text-blue-300' : 'text-gray-600'
+                                                    <div className={`p-3 rounded-lg shadow-inner ${
+                                                        ticket.documents?.[0]?.name ? 'bg-kfintech-bg text-kfintech-primary' : 'bg-kfintech-bg/50 text-gray-600'
+                                                    }`}>
+                                                        <FileText className="w-6 h-6" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className={`font-bold text-sm ${
+                                                            ticket.documents?.[0]?.name ? 'text-blue-300' : 'text-gray-600'
                                                         }`}>
-                                                            {ticket.documentName || 'No document attached'}
+                                                            {ticket.documents?.[0]?.name || 'No document attached'}
                                                         </p>
-                                                        {ticket.documentName && (
-                                                            <p className="text-[10px] text-gray-500 mt-0.5">AES-256 Encrypted · OCR verified by L1</p>
+                                                        {ticket.documents?.[0]?.s3Key && (
+                                                            <button 
+                                                                className="mt-2 text-xs font-bold uppercase tracking-wider text-kfintech-primary hover:text-blue-300 flex items-center gap-1 transition-colors"
+                                                                onClick={() => window.open(ticket.documents[0].s3Key, '_blank')}
+                                                            >
+                                                                <Activity className="w-3 h-3" /> View Source Document
+                                                            </button>
                                                         )}
                                                     </div>
-                                                    {ticket.ocrMatchVerified !== undefined && (
-                                                        <span className={`ml-auto text-[10px] font-extrabold uppercase tracking-widest px-2 py-1 rounded border ${
-                                                            ticket.ocrMatchVerified
-                                                                ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
-                                                                : 'text-red-400 bg-red-500/10 border-red-500/30'
-                                                        }`}>
-                                                            {ticket.ocrMatchVerified ? 'OCR Verified' : 'OCR Failed'}
-                                                        </span>
-                                                    )}
                                                 </div>
+
+                                                {ticket.documents?.[0]?.ocrExtraction && ticket.documents[0].ocrExtraction.matchVerified !== undefined && (
+                                                    <div className={`p-4 rounded-xl border border-kfintech-border/50 bg-kfintech-card/30 flex items-start gap-4 transition-colors hover:bg-kfintech-card/50 hover:border-kfintech-border`}>
+                                                        <div className={`p-3 rounded-lg shadow-inner ${
+                                                            ticket.documents[0].ocrExtraction.matchVerified ? 'bg-kfintech-bg text-emerald-400' : 'bg-kfintech-bg/50 text-red-400'
+                                                        }`}>
+                                                            <ShieldCheck className="w-6 h-6" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className={`font-bold text-sm ${
+                                                                ticket.documents[0].ocrExtraction.matchVerified ? 'text-emerald-400' : 'text-red-400'
+                                                            }`}>
+                                                                {ticket.documents[0].ocrExtraction.matchVerified ? 'OCR Verified' : 'OCR Failed'}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 mt-1">Cross-checked via automated pipeline</p>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </motion.div>
                                     )}

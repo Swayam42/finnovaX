@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const axios = require('axios');
 const FormData = require('form-data');
+const { v4: uuidv4 } = require('uuid');
 const Ticket = require('../models/Ticket');
 const AuditLog = require('../models/AuditLog');
+const { uploadToS3 } = require('../services/s3Service');
 
 exports.verifyInvestorDocument = async (req, res) => {
     // 1. Extract multipart form data
@@ -51,6 +53,36 @@ exports.verifyInvestorDocument = async (req, res) => {
 
         const ticket = await Ticket.findById(ticketId).session(session);
         if (!ticket) throw new Error("Target Ticket ID not found in database.");
+
+        // Upload Document to S3
+        let documentUrl = null;
+        try {
+            const fileName = `${uuidv4()}-${file.originalname}`;
+            await uploadToS3({
+                Key: fileName,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            });
+            const endpoint = process.env.AWS_ENDPOINT_URL || 'http://localhost:4566';
+            const bucket = process.env.AWS_BUCKET_NAME || 'kfintech-bucket';
+            documentUrl = `${endpoint}/${bucket}/${encodeURIComponent(fileName)}`;
+        } catch (s3Error) {
+            console.error("LocalStack S3 Upload Error:", s3Error.message);
+        }
+
+        // Add to documents array
+        if (documentUrl) {
+            ticket.documents.push({
+                name: file.originalname,
+                fileType: file.mimetype,
+                size: file.size,
+                s3Key: documentUrl,
+                ocrExtraction: {
+                    extractedText: aiPayload.extracted_text ? aiPayload.extracted_text.join('\n') : '',
+                    matchVerified: is_ai_pre_verified
+                }
+            });
+        }
 
         const previousStatus = ticket.status;
         const newStatus = is_ai_pre_verified ? 'L2_APPROVAL' : 'L1_REVIEW';

@@ -208,7 +208,7 @@ const L1MakerDesk = () => {
                                             <PriorityBadge priority={ticket.assignedPriority} />
                                         </div>
                                     </div>
-                                    <p className="text-sm font-medium text-gray-200 line-clamp-2 leading-snug group-hover:text-white transition-colors">{stripPrefix(ticket.complaintText)}</p>
+                                    <p className="text-sm font-medium text-gray-200 line-clamp-2 leading-snug group-hover:text-white transition-colors">{stripPrefix(ticket.description || ticket.title)}</p>
                                     <div className="mt-3 flex justify-between items-center text-xs text-gray-500 font-semibold">
                                         <span className="uppercase text-kfintech-accent tracking-wider">{ticket.status}</span>
                                         <span className="flex items-center gap-1 bg-kfintech-bg px-2 py-1 rounded">
@@ -285,7 +285,7 @@ const L1MakerDesk = () => {
                                         Request Description
                                     </h4>
                                     <p className="text-gray-300 text-md font-medium bg-kfintech-bg/50 p-5 rounded-xl border border-kfintech-border leading-relaxed shadow-inner">
-                                        {stripPrefix(selectedTicket.complaintText)}
+                                        {stripPrefix(selectedTicket.description || selectedTicket.title)}
                                     </p>
                                     {/* Service Metadata Panel */}
                                     {selectedTicket.serviceMetadata && Object.keys(selectedTicket.serviceMetadata).length > 0 && (() => {
@@ -318,15 +318,23 @@ const L1MakerDesk = () => {
                                 </h4>
                                 <div className="flex gap-6">
                                     
-                                    <div className="w-1/2 bg-kfintech-bg/50 rounded-xl border border-kfintech-border flex items-center justify-center p-8 relative overflow-hidden min-h-[300px] shadow-inner group">
+                                    <div className="w-1/2 bg-kfintech-bg/50 rounded-xl border border-kfintech-border flex flex-col items-center justify-center p-8 relative overflow-hidden min-h-[300px] shadow-inner group">
                                         <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none transform -rotate-45">
                                             <span className="text-4xl font-black tracking-widest text-white">CONFIDENTIAL</span>
                                         </div>
-                                        <div className="text-center relative z-10 group-hover:scale-105 transition-transform">
+                                        <div className="text-center relative z-10 group-hover:scale-105 transition-transform mb-4">
                                             <FileText className="w-16 h-16 text-gray-500 mx-auto mb-3" />
-                                            <p className="text-sm font-bold text-blue-300">{selectedTicket.documentName || "No document attached"}</p>
-                                            <p className="text-xs text-gray-500 mt-1">{selectedTicket.documentName ? "AES-256 Encrypted" : "OCR disabled"}</p>
+                                            <p className="text-sm font-bold text-blue-300">{selectedTicket.documents?.[0]?.name || "No document attached"}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{selectedTicket.documents?.[0] ? "AES-256 Encrypted" : "OCR disabled"}</p>
                                         </div>
+                                        {selectedTicket.documents?.[0]?.s3Key && (
+                                            <button 
+                                                className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/50 rounded flex items-center gap-2 text-xs font-bold uppercase transition-colors"
+                                                onClick={() => window.open(selectedTicket.documents[0].s3Key, '_blank')}
+                                            >
+                                                View Document <ChevronRight className="w-3 h-3" />
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="w-1/2 flex flex-col">
@@ -346,8 +354,8 @@ const L1MakerDesk = () => {
                                                     setTimeout(() => {
                                                         setIsOcrRunning(false);
                                                         setOcrResult({
-                                                            matched: selectedTicket.ocrMatchVerified || false,
-                                                            extracted: selectedTicket.ocrExtractedText || "No document attached or OCR processing failed."
+                                                            matched: selectedTicket.documents?.[0]?.ocrExtraction?.matchVerified || false,
+                                                            extracted: selectedTicket.documents?.[0]?.ocrExtraction?.extractedText || "No document attached or OCR processing failed."
                                                         });
                                                     }, 800);
                                                 }}
