@@ -1,0 +1,37 @@
+[
+    {
+        "id": "faq_1",
+        "question": "What is the KFintech Mutual Fund Redemption Policy?",
+        "answer": "All redemption requests submitted before 3:00 PM IST on a business day will be processed at that day's Net Asset Value (NAV). Requests submitted after 3:00 PM will be processed at the next business day's NAV."
+    },
+    {
+        "id": "faq_2",
+        "question": "What is the Dividend Reinvestment SLA?",
+        "answer": "Dividend reinvestment instructions must be submitted at least 5 business days prior to the record date to be effective for the upcoming payout."
+    },
+    {
+        "id": "faq_3",
+        "question": "How long does a KYC Updation take (SLA)?",
+        "answer": "Modification of KYC details (address, bank account, phone number) will reflect in the mutual fund folio within 2 working days after the submission of valid documentary proofs."
+    },
+    {
+        "id": "faq_4",
+        "question": "How do I cancel a Systematic Investment Plan (SIP)?",
+        "answer": "SIP cancellation requests require a strict 30-day notice period prior to the next scheduled deduction date."
+    },
+    {
+        "id": "faq_5",
+        "question": "Why would my account be frozen?",
+        "answer": "An account may be frozen for all incoming and outgoing transactions if the Pan-Aadhaar linkage is not completed by the regulatory deadline set by the government."
+    },
+    {
+        "id": "faq_6",
+        "question": "What documents are needed for a Bank Account Update?",
+        "answer": "To update your bank account, you must provide a cancelled cheque with your name printed on it and a copy of your bank passbook. The SLA for this process is 10 days."
+    },
+    {
+        "id": "faq_7",
+        "question": "What is the SLA for a Complaint?",
+        "answer": "Complaints are resolved within 7 days. No documents are required to raise a complaint."
+    }
+]

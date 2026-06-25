@@ -1,4 +1,19 @@
 const axios = require('axios');
+const ChatSession = require('../models/ChatSession');
+const Ticket = require('../models/Ticket');
+
+exports.getHistory = async (req, res) => {
+    try {
+        const session = await ChatSession.findOne({ userId: req.user.id });
+        if (!session) {
+            return res.status(200).json({ messages: [] });
+        }
+        res.status(200).json({ messages: session.messages });
+    } catch (error) {
+        console.error("Fetch history error:", error);
+        res.status(500).json({ message: "Failed to fetch chat history." });
+    }
+};
 
 exports.askAssistant = async (req, res) => {
     const { question } = req.body;
@@ -8,17 +23,68 @@ exports.askAssistant = async (req, res) => {
     }
 
     try {
-        // Proxy the request securely to the internal Python RAG Engine
-        // This avoids exposing the raw Python microservice directly to the internet
+        // 1. Fetch user's active tickets to provide as context
+        const activeTickets = await Ticket.find({ 
+            investor: req.user.id,
+            status: { $nin: ['CLOSED', 'RESOLVED'] }
+        }).sort({ createdAt: -1 });
+
+        let ticketContext = "";
+        if (activeTickets.length > 0) {
+            ticketContext = activeTickets.map(t => 
+                `Ticket ID: ${t._id}\nService Type: ${t.serviceType}\nStatus: ${t.status}\nPriority: ${t.assignedPriority}\nCreated At: ${t.createdAt}`
+            ).join('\n\n');
+        }
+
+        // 2. Fetch or create chat session
+        let session = await ChatSession.findOne({ userId: req.user.id });
+        if (!session) {
+            session = new ChatSession({ userId: req.user.id, messages: [] });
+        }
+
+        // 3. Save User Message
+        const userMsg = {
+            type: 'user',
+            text: question,
+            timestamp: new Date()
+        };
+        session.messages.push(userMsg);
+        
+        // 4. Format history for ML Service
+        // We only send the last 6 messages to keep the prompt size reasonable
+        const historyForMl = session.messages.slice(-6).map(m => ({
+            type: m.type,
+            text: m.text
+        }));
+
+        // 5. Proxy the request to Python RAG Engine
         const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
         const aiResponse = await axios.post(`${mlServiceUrl}/chatbot/ask`, {
-            question: question
+            question: question,
+            ticket_context: ticketContext,
+            history: historyForMl
         });
 
-        // Return the exact KFintech policy AI response payload back to the frontend
+        const mlData = aiResponse.data;
+
+        // 6. Save Bot Message
+        const botMsg = {
+            type: 'bot',
+            text: mlData.response || "No response.",
+            sources: mlData.retrieved_data_source || [],
+            sentiment: mlData.sentiment || "NEUTRAL",
+            timestamp: new Date()
+        };
+        session.messages.push(botMsg);
+        await session.save();
+
+        // 7. Return payload
         return res.status(200).json({
             message: "AI Chatbot generated a response successfully.",
-            data: aiResponse.data
+            data: {
+                ...mlData,
+                botMessage: botMsg // Include the formatted message for the UI
+            }
         });
     } catch (error) {
         console.error("AI Chatbot Proxy Engine Error:", error.message);

@@ -7,11 +7,10 @@ import { useAuth } from '../../context/AuthContext';
 const ChatbotWidget = () => {
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState([
-        { id: 1, type: 'bot', text: 'Hello! I am Nexus, your AI assistant. How can I help you with your investor services today?' }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
     const messagesEndRef = useRef(null);
 
     // Only show for INVESTOR or ADMIN_SUPER
@@ -22,10 +21,34 @@ const ChatbotWidget = () => {
     };
 
     useEffect(() => {
+        if (isOpen && !hasLoadedHistory) {
+            const fetchHistory = async () => {
+                try {
+                    const res = await apiClient.get('/chat/history');
+                    if (res.data.messages && res.data.messages.length > 0) {
+                        setMessages(res.data.messages.map(m => ({
+                            id: m._id || Math.random(),
+                            type: m.type,
+                            text: m.text,
+                            sources: m.sources,
+                            sentiment: m.sentiment
+                        })));
+                    } else {
+                        setMessages([{ id: 1, type: 'bot', text: 'Hello! I am Nexus, your AI assistant. How can I help you with your investor services today?' }]);
+                    }
+                    setHasLoadedHistory(true);
+                } catch (error) {
+                    console.error("Failed to load history:", error);
+                    setMessages([{ id: 1, type: 'bot', text: 'Hello! I am Nexus, your AI assistant. How can I help you with your investor services today?' }]);
+                    setHasLoadedHistory(true);
+                }
+            };
+            fetchHistory();
+        }
         if (isOpen) {
             scrollToBottom();
         }
-    }, [messages, isOpen]);
+    }, [messages, isOpen, hasLoadedHistory]);
 
     const handleSend = async (e) => {
         e.preventDefault();
@@ -38,7 +61,14 @@ const ChatbotWidget = () => {
 
         try {
             const res = await apiClient.post('/chat/ask', { question: userMsg.text });
-            const botMsg = { id: Date.now() + 1, type: 'bot', text: res.data?.data?.response || "I couldn't process that. Could you rephrase?" };
+            const aiData = res.data?.data?.botMessage || res.data?.data;
+            const botMsg = { 
+                id: Date.now() + 1, 
+                type: 'bot', 
+                text: aiData?.text || aiData?.response || "I couldn't process that. Could you rephrase?",
+                sources: aiData?.sources || aiData?.retrieved_data_source || [],
+                sentiment: aiData?.sentiment || 'NEUTRAL'
+            };
             setMessages(prev => [...prev, botMsg]);
         } catch (error) {
             console.error("Chat error:", error);
@@ -96,7 +126,17 @@ const ChatbotWidget = () => {
                                                 ? 'bg-kfintech-accent text-kfintech-bg font-medium rounded-tr-sm'
                                                 : 'bg-kfintech-bg border border-kfintech-border text-gray-300 rounded-tl-sm'
                                         }`}>
-                                            {msg.text}
+                                            <div className="whitespace-pre-wrap">{msg.text}</div>
+                                            {msg.type === 'bot' && msg.sources && msg.sources.length > 0 && (
+                                                <div className="mt-2 pt-2 border-t border-kfintech-border/50 text-[10px] text-gray-500">
+                                                    <span className="font-semibold">Sources:</span> {msg.sources.join(', ')}
+                                                </div>
+                                            )}
+                                            {msg.type === 'bot' && msg.sentiment === 'NEGATIVE' && (
+                                                <div className="mt-2 p-1.5 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs flex items-center gap-1">
+                                                    I sense this issue is frustrating. You can escalate directly by creating a complaint ticket.
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

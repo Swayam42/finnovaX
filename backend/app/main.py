@@ -2,6 +2,9 @@ import os
 import platform
 import ctypes
 from importlib.util import find_spec
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Fix PyTorch DLL loading issue on Windows
 if platform.system() == "Windows":
@@ -12,12 +15,9 @@ if platform.system() == "Windows":
             ctypes.CDLL(os.path.normpath(dll_path))
     except Exception:
         pass
-# pyrefly: ignore [missing-import]
+
 from fastapi import FastAPI
-# pyrefly: ignore [missing-import]
-from .api import sentiment
-from .api import ocr
-from .api import chatbot
+from app.routes import sentiment, ocr, chatbot, health
 
 app = FastAPI(title="KFintech Nexus Portal AI Models API")
 
@@ -25,7 +25,8 @@ app = FastAPI(title="KFintech Nexus Portal AI Models API")
 app.include_router(sentiment.router, prefix="/sentiment", tags=["Sentiment"])
 app.include_router(ocr.router, prefix="/ocr", tags=["OCR Verification"])
 app.include_router(chatbot.router, prefix="/chatbot", tags=["RAG Chatbot"])
+app.include_router(health.router, prefix="/health", tags=["Health"])
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the KFintech Nexus Portal AI Models API"}
+    return {"message": "Welcome to the KFintech Nexus Portal AI Models API. Use /docs to view the API documentation."}
