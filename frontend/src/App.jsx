@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import InvestorDashboard from './pages/InvestorDashboard';
 import L1MakerDesk from './pages/L1MakerDesk';
 import L2CheckerDesk from './pages/L2CheckerDesk';
@@ -29,6 +30,15 @@ const AppRoutes = () => {
                             isAuthenticated
                                 ? <Navigate to={getRoleDefaultRoute(user?.role)} replace />
                                 : <LoginPage />
+                        }
+                    />
+                    
+                    <Route
+                        path="/register"
+                        element={
+                            isAuthenticated
+                                ? <Navigate to={getRoleDefaultRoute(user?.role)} replace />
+                                : <RegisterPage />
                         }
                     />
 

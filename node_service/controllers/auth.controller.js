@@ -32,6 +32,58 @@ const generateAndSendOTP = async (phoneNumberOrEmail) => {
     return otp;
 };
 
+exports.register = async (req, res) => {
+    try {
+        const { name, email, password, phoneNumber } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'Name, email, and password are required.' });
+        }
+
+        const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email already registered.' });
+        }
+
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const newUser = new User({
+            name: name.trim(),
+            email: email.toLowerCase().trim(),
+            passwordHash,
+            phoneNumber: phoneNumber ? phoneNumber.trim() : undefined,
+            role: 'INVESTOR', // Default role for open registration
+            isActive: true
+        });
+
+        await newUser.save();
+
+        const payload = {
+            userId: newUser._id.toString(),
+            role: newUser.role,
+            name: newUser.name,
+            email: newUser.email
+        };
+
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
+        return res.status(201).json({
+            message: 'Registration successful.',
+            accessToken: token,
+            user: {
+                id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+                role: newUser.role
+            }
+        });
+    } catch (error) {
+        console.error('[Auth] Register error:', error);
+        return res.status(500).json({ message: 'Internal server error.' });
+    }
+};
+
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
