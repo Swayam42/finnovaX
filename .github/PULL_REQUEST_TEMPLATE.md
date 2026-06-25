@@ -18,7 +18,7 @@ Fixes # (issue)
 ## 🧪 How Has This Been Tested?
 Please describe the tests ran to verify changes. Provide instructions for reproduction.
 - [ ] **E2E Workflow:** Successfully submitted ticket, verified via L1 Maker and L2 Checker.
-- [ ] **AI Inference:** Verified FinBERT/Ollama/EasyOCR output accuracy.
+- [ ] **AI Inference:** Verified FinBERT/Florence-2/Whisper/Qwen output accuracy.
 - [ ] **Database Integrity:** Validated ACID Transactions via MongoDB Logs (No orphaned records).
 - [ ] **LocalStack Mocks:** Verified SES (Email) and SNS (SMS) triggers fired successfully.
 - [ ] **Environment:** 

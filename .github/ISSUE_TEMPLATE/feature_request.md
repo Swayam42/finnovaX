@@ -10,7 +10,7 @@ assignees: ''
 Describe the operational bottleneck or market opportunity this feature addresses. (e.g., "Agents currently spend time manually verifying email domains; automating this would reduce TAT by 5%.")
 
 ## 💡 Proposed Solution
-A clear description of the solution. Detail how this integrates with our existing **AI Pipelines** (FinBERT/Ollama) or **Compliance Workflows** (L1/L2 Maker-Checker).
+A clear description of the solution. Detail how this integrates with our existing **AI Pipelines** (FinBERT/Florence-2/Whisper/Qwen) or **Compliance Workflows** (L1/L2 Maker-Checker, Super Admin Control Center).
 
 ## 📈 Projected Business Impact
 - **Time/Cost Savings:** (e.g., "Will save ~2 minutes per ticket")
