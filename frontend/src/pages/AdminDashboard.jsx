@@ -72,6 +72,21 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleExportCsv = async () => {
+        try {
+            const res = await apiClient.get('/admin/reports/export', { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'nexus_reports_export.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            console.error("Export failed", error);
+        }
+    };
+
     const tabs = [
         { id: 'METRICS', label: 'System Metrics', icon: <Activity className="w-4 h-4" /> },
         { id: 'USERS', label: 'User Management', icon: <Users className="w-4 h-4" /> },
@@ -205,7 +220,10 @@ const AdminDashboard = () => {
                 <h2 className="text-lg font-extrabold text-white flex items-center gap-2">
                     <FileText className="w-5 h-5 text-blue-400" /> Ticket Queue
                 </h2>
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-kfintech-border hover:bg-kfintech-card/50 transition-colors text-xs font-bold text-gray-300">
+                <button 
+                    onClick={handleExportCsv}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-kfintech-border hover:bg-kfintech-card/50 transition-colors text-xs font-bold text-gray-300"
+                >
                     <Download className="w-4 h-4" /> Export CSV
                 </button>
             </div>

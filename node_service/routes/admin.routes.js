@@ -32,4 +32,8 @@ router.get('/tickets', authenticate, authorize('ADMIN_SUPER'), adminController.g
 // SuperAdmin flagged tickets
 router.get('/tickets/flagged', authenticate, authorize('ADMIN_SUPER'), adminController.getFlaggedTickets);
 
+// Route: GET /api/admin/reports/export
+// SuperAdmin export reports to CSV
+router.get('/reports/export', authenticate, authorize('ADMIN_SUPER'), adminController.exportReports);
+
 module.exports = router;

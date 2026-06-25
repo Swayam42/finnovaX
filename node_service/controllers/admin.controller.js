@@ -280,3 +280,35 @@ exports.getFlaggedTickets = async (req, res) => {
         return res.status(500).json({ error: err.message });
     }
 };
+
+// SuperAdmin Endpoint: Export Reports (CSV)
+exports.exportReports = async (req, res) => {
+    try {
+        const tickets = await Ticket.find()
+            .select('ticketId investorName serviceType status assignedPriority isPotentialFraud createdAt resolvedAt')
+            .sort({ createdAt: -1 });
+
+        // Build CSV string
+        let csv = 'Ticket ID,Investor Name,Service Type,Status,Priority,Fraud Flag,Created At,Resolved At\n';
+        
+        tickets.forEach(t => {
+            const ticketId = t.ticketId || t._id.toString();
+            const investorName = `"${(t.investorName || '').replace(/"/g, '""')}"`;
+            const serviceType = t.serviceType || '';
+            const status = t.status || '';
+            const priority = t.assignedPriority || '';
+            const isFraud = t.isPotentialFraud ? 'YES' : 'NO';
+            const createdAt = t.createdAt ? t.createdAt.toISOString() : '';
+            const resolvedAt = t.resolvedAt ? t.resolvedAt.toISOString() : '';
+            
+            csv += `${ticketId},${investorName},${serviceType},${status},${priority},${isFraud},${createdAt},${resolvedAt}\n`;
+        });
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="nexus_reports_export.csv"');
+        
+        return res.status(200).send(csv);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
