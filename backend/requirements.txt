@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+transformers>=4.43.0
+accelerate
+huggingface-hub
+openai-whisper
+
+requests
+numpy<2.0.0
+
+langchain
+langchain-community
+sentence-transformers
+chromadb
+
