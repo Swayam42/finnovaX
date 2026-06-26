@@ -22,4 +22,7 @@ router.post('/:id/comments', authenticate, ticketController.addComment);
 // POST /api/tickets/:id/resubmit
 router.post('/:id/resubmit', authenticate, upload.array('documents', 5), ticketController.resubmitTicket);
 
+// POST /api/tickets/:id/documents/:docId/ocr
+router.post('/:id/documents/:docId/ocr', authenticate, authorize('ADMIN_L1', 'ADMIN_SUPER'), ticketController.runOcr);
+
 module.exports = router;

@@ -86,30 +86,8 @@ exports.createTicket = async (req, res) => {
                 throw new Error("Failed to upload document to secure storage.");
             }
 
-            // C. EasyOCR Extraction (Images only)
-            let ocrExtractedText = isPdf ? "OCR skipped for PDF. Manual review required." : null;
+            let ocrExtractedText = null;
             let ocrMatchVerified = false;
-            
-            if (isImage) {
-                try {
-                    const formData = new FormData();
-                    formData.append('account_number', accountNumber);
-                    formData.append('file', file.buffer, {
-                        filename: file.originalname,
-                        contentType: file.mimetype,
-                    });
-                    
-                    const ocrRes = await axios.post(`${mlServiceUrl}/ocr/verify-account`, formData, {
-                        headers: { ...formData.getHeaders() }
-                    });
-                    
-                    ocrExtractedText = ocrRes.data.extracted_text.join('\n');
-                    ocrMatchVerified = ocrRes.data.account_found;
-                } catch (error) {
-                    console.error("EasyOCR Error:", error.message);
-                    ocrExtractedText = "OCR Processing Failed: " + error.message;
-                }
-            }
 
             uploadedDocuments.push({
                 name: file.originalname,
@@ -331,29 +309,8 @@ exports.resubmitTicket = async (req, res) => {
                 throw new Error("Failed to upload document to secure storage.");
             }
 
-            let ocrExtractedText = isPdf ? "OCR skipped for PDF. Manual review required." : null;
+            let ocrExtractedText = null;
             let ocrMatchVerified = false;
-
-            if (isImage) {
-                try {
-                    const formData = new FormData();
-                    formData.append('account_number', ticket.accountNumber || "123456789");
-                    formData.append('file', file.buffer, {
-                        filename: file.originalname,
-                        contentType: file.mimetype,
-                    });
-                    
-                    const ocrRes = await axios.post(`${mlServiceUrl}/ocr/verify-account`, formData, {
-                        headers: { ...formData.getHeaders() }
-                    });
-                    
-                    ocrExtractedText = ocrRes.data.extracted_text.join('\n');
-                    ocrMatchVerified = ocrRes.data.account_found;
-                } catch (error) {
-                    console.error("EasyOCR Error:", error.message);
-                    ocrExtractedText = "OCR Processing Failed: " + error.message;
-                }
-            }
 
             ticket.documents.push({
                 name: file.originalname,
@@ -389,6 +346,84 @@ exports.resubmitTicket = async (req, res) => {
         return res.status(200).json({ message: "Ticket resubmitted successfully.", ticket });
     } catch (error) {
         console.error("[Ticket] resubmitTicket error:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.runOcr = async (req, res) => {
+    try {
+        const { id, docId } = req.params;
+        
+        const ticket = await Ticket.findById(id);
+        if (!ticket) return res.status(404).json({ message: "Ticket not found." });
+
+        const document = ticket.documents.id(docId);
+        if (!document) return res.status(404).json({ message: "Document not found in ticket." });
+
+        if (document.fileType === 'application/pdf') {
+            return res.status(400).json({ message: "OCR cannot be run on PDF files yet. Manual review required." });
+        }
+
+        if (!document.fileType.startsWith('image/')) {
+            return res.status(400).json({ message: "OCR can only be run on images." });
+        }
+
+        const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+
+        // 1. Fetch file from S3
+        let fileBuffer;
+        try {
+            const s3Response = await axios.get(document.s3Key, { responseType: 'arraybuffer' });
+            fileBuffer = s3Response.data;
+        } catch (error) {
+            console.error("Error downloading file from S3 for OCR:", error.message);
+            return res.status(500).json({ message: "Failed to fetch document from storage." });
+        }
+
+        // 2. Run OCR Verification
+        let ocrExtractedText = null;
+        let ocrMatchVerified = false;
+
+        try {
+            const formData = new FormData();
+            formData.append('account_number', ticket.accountNumber || "");
+            formData.append('file', fileBuffer, {
+                filename: document.name,
+                contentType: document.fileType,
+            });
+            
+            const ocrRes = await axios.post(`${mlServiceUrl}/ocr/verify-account`, formData, {
+                headers: { ...formData.getHeaders() }
+            });
+            
+            ocrExtractedText = ocrRes.data.extracted_text.join('\n');
+            ocrMatchVerified = ocrRes.data.account_found;
+        } catch (error) {
+            console.error("EasyOCR Error:", error.message);
+            ocrExtractedText = "OCR Processing Failed: " + error.message;
+        }
+
+        // 3. Update the database
+        document.ocrExtraction.extractedText = ocrExtractedText;
+        document.ocrExtraction.matchVerified = ocrMatchVerified;
+        
+        await ticket.save();
+
+        await AuditLog.create({
+            entityId: ticket._id,
+            entityType: 'Ticket',
+            action: 'OCR_VERIFICATION_RUN',
+            performedBy: req.user.id,
+            details: { 
+                note: `L1 Admin manually ran OCR verification. Match found: ${ocrMatchVerified}`,
+                documentName: document.name
+            }
+        });
+
+        return res.status(200).json({ message: "OCR verification completed.", document });
+
+    } catch (error) {
+        console.error("[Ticket] runOcr error:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };

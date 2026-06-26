@@ -6,6 +6,7 @@ import {
     Clock, ChevronLeft, Check, ArrowRight, X, Info
 } from 'lucide-react';
 import { SERVICE_TYPE_LIST, getServiceType } from '../../config/serviceTypes';
+import { useAuth } from '../../context/AuthContext';
 
 // Animation Variants
 const stepVariants = {
@@ -186,11 +187,13 @@ const CreateTicketFlow = () => {
 
     const [selectedType, setSelectedType] = useState(null);
 
+    const { user } = useAuth();
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        investorName: 'Amit',
-        accountNumber: '9876543210'
+        investorName: user?.name || '',
+        accountNumber: ''
     });
     const [serviceMetadata, setServiceMetadata] = useState({});
     const [file, setFile] = useState(null);
@@ -263,7 +266,7 @@ const CreateTicketFlow = () => {
                 message: `${serviceConfig.label} request submitted successfully. Your ticket has been queued for L1 Maker review and AI triage.`
             });
             setSelectedType(null);
-            setFormData({ title: '', description: '', investorName: 'Amit', accountNumber: '9876543210' });
+            setFormData({ title: '', description: '', investorName: user?.name || '', accountNumber: '' });
             setServiceMetadata({});
             setFile(null);
             setGoingBack(true);
@@ -404,22 +407,16 @@ const CreateTicketFlow = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
                                         <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">Investor Name</label>
-                                        <select name="investorName" value={formData.investorName}
-                                            onChange={handleChange}
-                                            className={`${inputClass} cursor-pointer`}>
-                                            <option value="Amit">Amit (Perfect OCR Match)</option>
-                                            <option value="John Doe">John Doe (Failure Test)</option>
-                                            <option value="Jane Smith">Jane Smith (Failure Test)</option>
-                                        </select>
+                                        <input type="text" name="investorName" value={formData.investorName}
+                                            readOnly
+                                            className={`${inputClass} opacity-70 cursor-not-allowed`} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">Account Number</label>
-                                        <select name="accountNumber" value={formData.accountNumber}
+                                        <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">Account Number <span className="text-red-400">*</span></label>
+                                        <input type="text" name="accountNumber" required value={formData.accountNumber}
                                             onChange={handleChange}
-                                            className={`${inputClass} cursor-pointer`}>
-                                            <option value="9876543210">9876543210 (Perfect OCR Match)</option>
-                                            <option value="1111111111">1111111111 (Failure Test)</option>
-                                        </select>
+                                            placeholder="Enter your account number"
+                                            className={inputClass} />
                                     </div>
                                 </div>
                             </div>

@@ -31,6 +31,7 @@ const L1MakerDesk = () => {
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [loading, setLoading] = useState(true);
     const [notes, setNotes] = useState('');
+    const [runningOcr, setRunningOcr] = useState(null);
     
     // Filtering State
     const [filterStatus, setFilterStatus] = useState('ALL');
@@ -99,6 +100,25 @@ const L1MakerDesk = () => {
             setSelectedTicket(prev => ({ ...prev, documents: res.data.documents }));
         } catch (error) {
             alert(`Verification failed: ${error.response?.data?.message || error.message}`);
+        }
+    };
+
+    const handleRunOcr = async (docId) => {
+        try {
+            setRunningOcr(docId);
+            const res = await apiClient.post(`/tickets/${selectedTicket._id}/documents/${docId}/ocr`);
+            
+            // Update the local state with the new document data
+            setSelectedTicket(prev => {
+                const updatedDocs = prev.documents.map(d => 
+                    d._id === docId ? res.data.document : d
+                );
+                return { ...prev, documents: updatedDocs };
+            });
+        } catch (error) {
+            alert(`OCR Processing failed: ${error.response?.data?.message || error.message}`);
+        } finally {
+            setRunningOcr(null);
         }
     };
 
@@ -406,7 +426,7 @@ const L1MakerDesk = () => {
                                                             <Cpu className="w-5 h-5" /> AI Extraction Result
                                                         </h5>
                                                         
-                                                        {doc.ocrExtraction ? (
+                                                        {doc.ocrExtraction?.extractedText ? (
                                                             <div className={`mt-2 p-5 rounded-xl border shadow-inner ${doc.ocrExtraction.matchVerified ? 'bg-kfintech-accent/10 border-kfintech-accent/30' : 'bg-red-500/10 border-red-500/30'}`}>
                                                                 <div className={`flex items-center gap-2 font-bold mb-3 text-sm uppercase tracking-wider ${doc.ocrExtraction.matchVerified ? 'text-emerald-400' : 'text-red-400'}`}>
                                                                     {doc.ocrExtraction.matchVerified ? <><CheckCircle2 className="w-5 h-5" /> CRM Match Verified</> : <><ShieldAlert className="w-5 h-5" /> Verification Failed</>}
@@ -416,7 +436,19 @@ const L1MakerDesk = () => {
                                                                 </pre>
                                                             </div>
                                                         ) : (
-                                                            <p className="text-sm text-gray-400 font-medium">No OCR data available for this document.</p>
+                                                            <div className="flex flex-col items-center justify-center p-6 bg-kfintech-bg/50 rounded-xl border border-kfintech-border shadow-inner mt-2 h-[150px]">
+                                                                <p className="text-sm text-gray-400 font-medium mb-4">OCR extraction pending.</p>
+                                                                <button 
+                                                                    onClick={() => handleRunOcr(doc._id)}
+                                                                    disabled={runningOcr === doc._id}
+                                                                    className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                                                                    {runningOcr === doc._id ? (
+                                                                        <><div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing OCR...</>
+                                                                    ) : (
+                                                                        <><Cpu className="w-4 h-4" /> Run OCR Verification</>
+                                                                    )}
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
