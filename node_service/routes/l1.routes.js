@@ -23,9 +23,7 @@ router.post('/tickets/:id/escalate', authenticate, authorize('ADMIN_L1', 'ADMIN_
 // Reject with reason
 router.post('/tickets/:id/reject', authenticate, authorize('ADMIN_L1', 'ADMIN_SUPER'), l1Controller.rejectTicket);
 
-// Route: POST /api/l1/tickets/:id/hold
-// Hold for investigation
-router.post('/tickets/:id/hold', authenticate, authorize('ADMIN_L1', 'ADMIN_SUPER'), l1Controller.holdTicket);
+
 
 // Route: POST /api/l1/tickets/:id/summarize
 // Generate AI summary for the ticket

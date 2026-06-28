@@ -16,7 +16,7 @@ exports.getL1Queue = async (req, res) => {
         if (status && status !== 'ALL') {
             query.status = status;
         } else {
-            query.status = { $in: ['OPEN', 'IN_PROGRESS', 'L1_REVIEW', 'ON_HOLD'] };
+            query.status = { $in: ['OPEN', 'IN_PROGRESS', 'L1_REVIEW'] };
         }
 
         if (priority && priority !== 'ALL') {
@@ -55,6 +55,11 @@ exports.getL1Queue = async (req, res) => {
             .populate('assignedL1', 'name email');
 
         const total = await Ticket.countDocuments(query);
+        
+        console.log("L1 Queue Query:", JSON.stringify(query));
+        const allTix = await Ticket.find({}).select('status assignedL1 title');
+        console.log("All DB Tickets:", allTix);
+        console.log("Filtered tickets length:", tickets.length);
 
         res.status(200).json({
             tickets,
@@ -293,54 +298,7 @@ exports.rejectTicket = async (req, res) => {
     }
 };
 
-exports.holdTicket = async (req, res) => {
-    try {
-        const ticketId = req.params.id;
-        const { reason } = req.body;
 
-        const ticket = await Ticket.findById(ticketId);
-        if (!ticket) return res.status(404).json({ message: "Ticket not found" });
-
-        const session = await mongoose.startSession();
-        session.startTransaction();
-
-        try {
-            if (!ticket.assignedL1) ticket.assignedL1 = req.user.id;
-            
-            const beforeStatus = ticket.status;
-            ticket.status = 'ON_HOLD';
-            ticket.isPotentialFraud = true;
-            ticket.l1Notes = reason ? (ticket.l1Notes ? ticket.l1Notes + '\n[HOLD REASON]: ' + reason : '[HOLD REASON]: ' + reason) : ticket.l1Notes;
-            
-            await ticket.save({ session });
-
-            const auditLog = new AuditLog({
-                entityId: ticket._id,
-                entityType: 'Ticket',
-                action: 'HOLD_TICKET',
-                performedBy: req.user.id,
-                details: {
-                    before: { status: beforeStatus, isPotentialFraud: false },
-                    after: { status: ticket.status, isPotentialFraud: true },
-                    note: reason
-                }
-            });
-            await auditLog.save({ session });
-
-            await session.commitTransaction();
-            session.endSession();
-
-            return res.status(200).json({ message: "Ticket placed on hold for investigation", ticket });
-        } catch (err) {
-            await session.abortTransaction();
-            session.endSession();
-            throw err;
-        }
-    } catch (error) {
-        console.error("Hold error:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-};
 
 exports.summarizeTicket = async (req, res) => {
     try {
