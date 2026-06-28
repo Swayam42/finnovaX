@@ -133,6 +133,26 @@ exports.verifyInvestorDocument = async (req, res) => {
             contentType: file.mimetype
         });
 
+        // 4. Forward the image buffer to the internal Python backend
+        let aiPayload;
+        try {
+            const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+            const aiResponse = await axios.post(`${mlServiceUrl}/ocr/verify-account`, formData, {
+                headers: {
+                    ...formData.getHeaders(),
+                },
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+            });
+
+            aiPayload = aiResponse.data;
+        } catch (error) {
+            console.error("AI Service Error:", error.response?.data || error.message);
+            throw new Error("AI Document Verification Service is currently unavailable.");
+        }
+
+        const is_ai_pre_verified = aiPayload.verification_status === 'VERIFIED';
+
         const previousStatus = ticket.status;
         const newStatus = is_ai_pre_verified ? 'L2_APPROVAL' : 'L1_REVIEW';
 
