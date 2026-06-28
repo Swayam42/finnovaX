@@ -25,9 +25,17 @@ exports.uploadDocuments = async (files) => {
                 ContentType: file.mimetype,
             });
             
-            const endpoint = process.env.AWS_ENDPOINT_URL || 'http://localhost:4566';
+            const endpoint = process.env.AWS_ENDPOINT_URL;
             const bucket = process.env.AWS_BUCKET_NAME || 'kfintech-bucket';
-            documentUrl = `${endpoint}/${bucket}/${encodeURIComponent(fileName)}`;
+            
+            if (endpoint) {
+                // LocalStack URL Format (path-style)
+                documentUrl = `${endpoint}/${bucket}/${encodeURIComponent(fileName)}`;
+            } else {
+                // Real AWS S3 URL Format (virtual-hosted style)
+                const region = process.env.AWS_REGION || "ap-south-1";
+                documentUrl = `https://${bucket}.s3.${region}.amazonaws.com/${encodeURIComponent(fileName)}`;
+            }
         } catch (error) {
             console.error("LocalStack S3 Upload Error:", error.message);
             throw new Error("Failed to upload document to secure storage.");

@@ -36,6 +36,7 @@ const UserSchema = new mongoose.Schema({
         status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' },
         aadhaar: String,
         pan: String,
+        dl: String,
         gstNumber: String
     },
     bankAccount: {
@@ -61,6 +62,10 @@ const UserSchema = new mongoose.Schema({
     resetPasswordExpires: Date,
     otpCode: String,
     otpExpires: Date,
+    dob: {
+        type: String,
+        trim: true
+    },
     profileCompleted: {
         type: Boolean,
         default: false

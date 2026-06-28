@@ -33,5 +33,7 @@ router.post('/change-password', authenticate, passwordController.changePassword)
 
 // Profile
 router.put('/profile', authenticate, upload.any(), profileController.updateProfile);
+router.post('/profile/documents', authenticate, upload.any(), profileController.uploadDocument);
+router.delete('/profile/documents/:docType', authenticate, profileController.deleteDocument);
 
 module.exports = router;

@@ -15,6 +15,11 @@ class OCRVerificationResponse(BaseModel):
     extracted_text: list[str] = Field(..., description="List of text blocks extracted by OCR.", json_schema_extra={"example": ["HDFC BANK", "ACCOUNT: 123456789"]})
     message: str = Field(..., description="Details regarding the OCR verification.", json_schema_extra={"example": "Account number '123456789' successfully verified."})
 
+class KYCVerificationResponse(BaseModel):
+    match_found: bool = Field(..., description="True if the name and dob were verified in the document.", json_schema_extra={"example": True})
+    extracted_text: list[str] = Field(..., description="List of text blocks extracted by OCR.", json_schema_extra={"example": ["JOHN DOE", "DOB: 1990-01-01"]})
+    message: str = Field(..., description="Details regarding the KYC verification.", json_schema_extra={"example": "Name and DOB successfully verified."})
+
 class ChatRequest(BaseModel):
     question: str = Field(..., description="The user's query.", json_schema_extra={"example": "How long does KYC updation take?"})
     history: list[dict] = Field([], description="Chat history array containing user and bot messages.", json_schema_extra={"example": [{"type": "user", "text": "Hi"}, {"type": "bot", "text": "Welcome to Finora Assist."}]})

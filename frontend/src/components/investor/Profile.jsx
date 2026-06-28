@@ -1,28 +1,35 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import apiClient from '../../api/client';
-import { User, Mail, Phone, Lock, FileText, Download, ShieldCheck, MapPin, Building, Map } from 'lucide-react';
+import { User, Lock, FileText, Download, ShieldCheck, MapPin, Building2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const INDIAN_BANKS = [
+    "HDFC Bank", "State Bank of India (SBI)", "ICICI Bank", "Axis Bank", 
+    "Kotak Mahindra Bank", "IndusInd Bank", "Punjab National Bank (PNB)", 
+    "Bank of Baroda", "Canara Bank", "Union Bank of India"
+];
 
 const Profile = () => {
     const { user, updateSession } = useAuth();
     
-    // Forms state
     const [profileData, setProfileData] = useState({
         name: user?.name || '',
+        dob: user?.dob || '',
         phoneNumber: user?.phoneNumber || '',
         street: user?.address?.street || '',
         city: user?.address?.city || '',
-        state: user?.address?.state || ''
+        state: user?.address?.state || '',
+        bankName: user?.bankAccount?.bankName || '',
+        accountNumber: user?.bankAccount?.accountNumber || '',
+        ifscCode: user?.bankAccount?.ifsc || ''
     });
-    const [aadhaarDoc, setAadhaarDoc] = useState(null);
-    const [panDoc, setPanDoc] = useState(null);
-
     const [loadingProfile, setLoadingProfile] = useState(false);
     const [profileMessage, setProfileMessage] = useState({ type: '', text: '' });
 
@@ -33,22 +40,26 @@ const Profile = () => {
         try {
             const formData = new FormData();
             formData.append('name', profileData.name);
+            formData.append('dob', profileData.dob);
             formData.append('phoneNumber', profileData.phoneNumber);
             formData.append('address', JSON.stringify({ 
                 street: profileData.street, 
                 city: profileData.city, 
                 state: profileData.state 
             }));
+            formData.append('bankAccount', JSON.stringify({
+                bankName: profileData.bankName,
+                accountNumber: profileData.accountNumber,
+                ifsc: profileData.ifscCode
+            }));
             
-            if (aadhaarDoc) formData.append('aadhaarDoc', aadhaarDoc);
-            if (panDoc) formData.append('panDoc', panDoc);
-
             const res = await apiClient.put('/auth/profile', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setProfileMessage({ type: 'success', text: res.data.message || 'Profile updated successfully!' });
             
-            // If the backend says the profile is completed, or returns updated user, refresh session
+            let messageText = res.data.message || 'Profile updated successfully!';
+            setProfileMessage({ type: 'success', text: messageText });
+
             if (res.data.user) {
                 if (typeof updateSession === 'function') {
                     updateSession(res.data.user);
@@ -62,8 +73,6 @@ const Profile = () => {
             setLoadingProfile(false);
         }
     };
-
-
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-12">
@@ -106,15 +115,27 @@ const Profile = () => {
                                     </div>
                                 </div>
                                 
-                                <div className="space-y-2">
-                                    <Label>Phone Number</Label>
-                                    <Input 
-                                        type="tel" 
-                                        required
-                                        value={profileData.phoneNumber} 
-                                        onChange={e => setProfileData({...profileData, phoneNumber: e.target.value})}
-                                        className="bg-white border-zinc-200 max-w-sm"
-                                    />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Phone Number</Label>
+                                        <Input 
+                                            type="tel" 
+                                            required
+                                            value={profileData.phoneNumber} 
+                                            onChange={e => setProfileData({...profileData, phoneNumber: e.target.value})}
+                                            className="bg-white border-zinc-200"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Date of Birth</Label>
+                                        <Input 
+                                            type="date" 
+                                            required
+                                            value={profileData.dob} 
+                                            onChange={e => setProfileData({...profileData, dob: e.target.value})}
+                                            className="bg-white border-zinc-200"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="space-y-4 pt-2">
@@ -157,33 +178,48 @@ const Profile = () => {
                                     </div>
                                 </div>
 
-                                {!user?.profileCompleted && (
-                                    <div className="space-y-4 pt-4 border-t border-zinc-100">
-                                        <h3 className="text-sm font-medium text-zinc-900">Required Documents for KYC</h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label>Aadhaar Card <span className="text-red-500">*</span></Label>
-                                                <Input 
-                                                    type="file" 
-                                                    required={!user?.kyc?.aadhaar}
-                                                    accept="image/jpeg, image/png"
-                                                    onChange={(e) => setAadhaarDoc(e.target.files[0])}
-                                                    className="bg-white border-zinc-200 file:text-zinc-700"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>PAN Card <span className="text-red-500">*</span></Label>
-                                                <Input 
-                                                    type="file" 
-                                                    required={!user?.kyc?.pan}
-                                                    accept="image/jpeg, image/png"
-                                                    onChange={(e) => setPanDoc(e.target.files[0])}
-                                                    className="bg-white border-zinc-200 file:text-zinc-700"
-                                                />
-                                            </div>
+                                <div className="space-y-4 pt-4 border-t border-zinc-100">
+                                    <h3 className="text-sm font-medium text-zinc-900 flex items-center gap-2">
+                                        <Building2 className="w-4 h-4 text-zinc-500" /> Bank Details
+                                    </h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Bank Name</Label>
+                                            <Select value={profileData.bankName} onValueChange={(val) => setProfileData({...profileData, bankName: val})} required>
+                                                <SelectTrigger className="w-full bg-white border-zinc-200">
+                                                    <SelectValue placeholder="Select Bank" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {INDIAN_BANKS.map((b) => (
+                                                        <SelectItem key={b} value={b}>{b}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Account Number</Label>
+                                            <Input 
+                                                type="text" 
+                                                required
+                                                value={profileData.accountNumber} 
+                                                onChange={e => setProfileData({...profileData, accountNumber: e.target.value})}
+                                                className="bg-white border-zinc-200"
+                                            />
                                         </div>
                                     </div>
-                                )}
+                                    <div className="space-y-2 max-w-xs">
+                                        <Label>IFSC Code</Label>
+                                        <Input 
+                                            type="text" 
+                                            required
+                                            value={profileData.ifscCode} 
+                                            onChange={e => setProfileData({...profileData, ifscCode: e.target.value})}
+                                            className="bg-white border-zinc-200 uppercase"
+                                            maxLength={11}
+                                        />
+                                    </div>
+                                </div>
+
                                 
                                 {profileMessage.text && (
                                     <Alert variant={profileMessage.type === 'error' ? 'destructive' : 'default'} className={profileMessage.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : ''}>
@@ -201,7 +237,6 @@ const Profile = () => {
                 </div>
 
                 <div className="space-y-6">
-                    {/* Security Card */}
                     <Card className="border-zinc-200 shadow-sm bg-white">
                         <CardHeader className="pb-3 border-b border-zinc-100">
                             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -217,53 +252,6 @@ const Profile = () => {
                         </CardContent>
                     </Card>
 
-                    {/* KYC Documents */}
-                    {user?.profileCompleted && (
-                        <Card className="border-zinc-200 shadow-sm bg-white">
-                            <CardHeader className="pb-3 border-b border-zinc-100">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                                        <ShieldCheck className="w-4 h-4 text-emerald-600" /> KYC Documents
-                                    </CardTitle>
-                                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">Verified</Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="pt-4 space-y-4">
-                                <p className="text-xs text-zinc-500 leading-relaxed">
-                                    Your KYC verification is complete. You can download the submitted documents below.
-                                </p>
-                                
-                                <div className="space-y-3">
-                                    {[
-                                        { title: 'Aadhaar Card', icon: FileText, url: user?.kyc?.aadhaar },
-                                        { title: 'PAN Card', icon: FileText, url: user?.kyc?.pan }
-                                    ].filter(doc => doc.url).map((doc, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-3 border border-zinc-200 rounded-lg bg-zinc-50 hover:bg-zinc-100 transition-colors">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-white rounded shadow-sm shrink-0">
-                                                    <doc.icon className="w-4 h-4 text-zinc-500" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-zinc-900">{doc.title}</p>
-                                                    <p className="text-[10px] text-zinc-500">Submitted</p>
-                                                </div>
-                                            </div>
-                                            <a 
-                                                href={doc.url} 
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="p-2 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200 rounded-md transition-colors shrink-0">
-                                                <Download className="w-4 h-4" />
-                                            </a>
-                                        </div>
-                                    ))}
-                                    {(!user?.kyc?.aadhaar && !user?.kyc?.pan) && (
-                                        <p className="text-sm text-zinc-500 text-center py-2">No documents found.</p>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
             </div>
         </div>

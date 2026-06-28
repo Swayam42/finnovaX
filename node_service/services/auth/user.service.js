@@ -9,7 +9,7 @@ exports.getUserByEmail = async (email) => {
 };
 
 exports.updateUserProfile = async (userId, updateData) => {
-    const allowed = ['name', 'phoneNumber', 'bankAccount', 'nominee', 'address', 'kyc', 'profileCompleted'];
+    const allowed = ['name', 'phoneNumber', 'bankAccount', 'nominee', 'address', 'kyc', 'profileCompleted', 'dob'];
     const updates = {};
     
     allowed.forEach(key => {

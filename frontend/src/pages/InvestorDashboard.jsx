@@ -5,6 +5,7 @@ import CreateTicketFlow from '../components/investor/CreateTicketFlow';
 import TicketDetail from '../components/investor/TicketDetail';
 import Profile from '../components/investor/Profile';
 import ProfileCompletionModal from '../components/investor/ProfileCompletionModal';
+import Documents from '../components/investor/Documents';
 import { useAuth } from '../context/AuthContext';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -16,8 +17,8 @@ const InvestorDashboard = () => {
     const isProfileIncomplete = user?.role === 'INVESTOR' && !user?.profileCompleted;
 
     const handleTabChange = (tab) => {
-        if (isProfileIncomplete && tab !== 'profile') {
-            return; // Prevent navigating away if incomplete
+        if (isProfileIncomplete && tab !== 'profile' && tab !== 'documents') {
+            return; // Prevent navigating away if incomplete (allow profile and documents)
         }
         setActiveTab(tab);
         setSelectedTicketId(null);
@@ -40,11 +41,10 @@ const InvestorDashboard = () => {
                 return <CreateTicketFlow onTabChange={handleTabChange} />;
             case 'profile':
                 return <Profile />;
-            // Notifications and Documents are placeholders for now
+            case 'documents':
+                return <Documents />;
             case 'notifications':
                 return <div className="flex h-full items-center justify-center text-zinc-500">Notifications coming soon</div>;
-            case 'documents':
-                return <div className="flex h-full items-center justify-center text-zinc-500">Document upload center coming soon</div>;
             default:
                 return <MyTickets onSelectTicket={setSelectedTicketId} />;
         }

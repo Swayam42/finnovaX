@@ -21,7 +21,7 @@ const ProfileCompletionModal = ({ onGoToProfile }) => {
                         <div>
                             <h3 className="text-sm font-semibold text-amber-800">Complete Your Profile</h3>
                             <p className="text-sm text-amber-700 mt-1">
-                                Welcome to Nexus Portal! To ensure platform security and regulatory compliance, you must complete your KYC profile and upload your Identity Documents before accessing the dashboard.
+                                Welcome to Nexus Portal! To ensure platform security and regulatory compliance, you must complete your KYC profile before accessing the dashboard.
                             </p>
                         </div>
                     </div>

@@ -61,6 +61,7 @@ const LoginPage = () => {
         } catch (err) {
             const msg = err.response?.data?.message || 'Login failed. Please check your credentials.';
             setError(msg);
+            setSuccessMessage('');
         } finally {
             setIsLoading(false);
         }

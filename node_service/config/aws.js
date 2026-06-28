@@ -15,7 +15,7 @@ const config = {
 
 const ses = new SESClient(config);
 const sns = new SNSClient(config);
-const s3 = new S3Client({ ...config, forcePathStyle: true }); // Essential for LocalStack S3
+const s3 = new S3Client({ ...config, forcePathStyle: !!process.env.AWS_ENDPOINT_URL }); // True for LocalStack, False for Real AWS
 
 module.exports = {
   ses,
