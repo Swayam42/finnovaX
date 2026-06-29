@@ -13,10 +13,19 @@ const { sendSMS } = require('../snsService'); // Existing AWS / Twilio service
 
 exports.generateAndSendOTP = async (user) => {
     const otp = crypto.randomInt(100000, 999999).toString();
-    console.log("\n======================================");
-    console.log("🔐 DEVELOPMENT OTP:", otp);
-    console.log("👤 User:", user.email);
-    console.log("======================================\n");
+    
+    // Add bright ANSI colors to make it unmissable in the terminal
+    const bgGreen = '\x1b[42m';
+    const fgBlack = '\x1b[30m';
+    const fgYellow = '\x1b[33m';
+    const bold = '\x1b[1m';
+    const reset = '\x1b[0m';
+    
+    console.log('\n' + fgYellow + bold + '=========================================' + reset);
+    console.log(bgGreen + fgBlack + bold + '  >>> 🔐 DEVELOPMENT OTP: ' + otp + ' <<<  ' + reset);
+    console.log(fgYellow + bold + '  👤 User: ' + user.email + reset);
+    console.log(fgYellow + bold + '=========================================\n' + reset);
+    
     const otpHash = await bcrypt.hash(otp, 10);
 
     user.otpCode = otpHash;
@@ -28,13 +37,30 @@ exports.generateAndSendOTP = async (user) => {
     try {
         await sendEmail({
             to: user.email,
-            subject: 'KFintech Nexus — Login Verification Code',
+            subject: 'FinnovaX — Login Verification Code',
             message: `
-                <h1>Your Verification Code</h1>
-                <p>Hello ${user.name || 'Valued Investor'},</p>
-                <p>Your one-time login code is: <strong style="font-size:1.4em">${otp}</strong></p>
-                <p>This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
-                <p>If you did not request this code, please ignore this email or contact support immediately.</p>
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fbfbfb; padding: 40px 20px; color: #18181b; line-height: 1.6;">
+                    <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 40px; border: 1px solid #e4e4e7; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #18181b; letter-spacing: -0.5px;">FinnovaX</h1>
+                            <div style="height: 2px; width: 40px; background-color: #18181b; margin: 15px auto;"></div>
+                        </div>
+                        <h2 style="color: #18181b; font-size: 20px; font-weight: 600; margin-top: 0;">Verification Code</h2>
+                        <p style="color: #52525b; font-size: 15px; margin-bottom: 24px;">Hello ${user.name || 'Valued Investor'},</p>
+                        <p style="color: #52525b; font-size: 15px; margin-bottom: 24px;">Please use the following one-time code to complete your login. This code will expire in 10 minutes.</p>
+                        
+                        <div style="text-align: center; margin: 35px 0;">
+                            <div style="background-color: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 8px; padding: 20px; display: inline-block;">
+                                <span style="font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #18181b;">${otp}</span>
+                            </div>
+                        </div>
+
+                        <p style="color: #71717a; font-size: 14px; margin-bottom: 0;">If you did not request this code, please ignore this email or contact support immediately.</p>
+                        
+                        <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 30px 0;" />
+                        <p style="color: #a1a1aa; font-size: 13px; margin: 0; text-align: center;">Secure Login • FinnovaX Security Team</p>
+                    </div>
+                </div>
             `
         });
     } catch (emailError) {
