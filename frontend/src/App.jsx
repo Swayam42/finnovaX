@@ -14,6 +14,8 @@ import L1MakerDesk from './pages/L1MakerDesk';
 import L2CheckerDesk from './pages/L2CheckerDesk';
 import AdminDashboard from './pages/AdminDashboard';
 import ProfilePage from './pages/ProfilePage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 const AppRoutes = () => {
     const { user, isAuthenticated, isLoading } = useAuth();
@@ -74,6 +76,9 @@ const AppRoutes = () => {
                                 : <ForgotPasswordPage />
                         }
                     />
+
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
 
                     {/* ── Protected: Investor ── */}
                     <Route
