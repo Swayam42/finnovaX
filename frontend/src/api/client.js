@@ -2,11 +2,20 @@ import axios from 'axios';
 
 // Create an Axios instance pointing to the Node.js CRM Backend
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
     }
+});
+
+// Request Interceptor: Attach Bearer token if cookies fail
+apiClient.interceptors.request.use((config) => {
+    const token = localStorage.getItem('kfintech_access_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 });
 
 

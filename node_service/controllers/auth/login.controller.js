@@ -28,7 +28,8 @@ exports.initiateLogin = async (req, res) => {
             return res.status(200).json({ 
                 message: 'Login successful.', 
                 requiresOtp: false, 
-                user: userService.getPublicProfile(user) 
+                user: userService.getPublicProfile(user),
+                accessToken 
             });
         }
 
@@ -67,7 +68,8 @@ exports.verifyOTP = async (req, res) => {
 
         return res.status(200).json({ 
             message: 'Login successful.', 
-            user: userService.getPublicProfile(user) 
+            user: userService.getPublicProfile(user),
+            accessToken 
         });
     } catch (error) {
         console.error('[Auth] Verify OTP error:', error);

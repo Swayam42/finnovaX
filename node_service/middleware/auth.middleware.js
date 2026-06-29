@@ -1,7 +1,12 @@
 const jwt = require('jsonwebtoken');
 
 exports.authenticate = (req, res, next) => {
-    const token = req.cookies.kfintech_access_token;
+    let token = req.cookies.kfintech_access_token;
+
+    // Fallback to Bearer token if cookies are blocked by cross-origin settings
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
 
     if (!token) {
         return res.status(401).json({ message: 'Authentication required. No token provided.' });

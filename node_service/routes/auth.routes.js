@@ -18,7 +18,7 @@ const loginLimiter = rateLimit({
 
 // Authentication Flow
 router.post('/register', registerController.register);
-router.post('/login', loginLimiter, loginController.initiateLogin);
+router.post('/login', loginController.initiateLogin);
 router.post('/verify-otp', loginController.verifyOTP);
 
 // Session Management
