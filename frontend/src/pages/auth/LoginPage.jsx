@@ -21,7 +21,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(location.state?.email || '');
     const [password, setPassword] = useState('');
     const [otp, setOtp] = useState('');
     
@@ -32,8 +32,17 @@ const LoginPage = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const [showDemo, setShowDemo] = useState(false);
     const [isOtpStep, setIsOtpStep] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(30);
 
     const from = location.state?.from?.pathname || null;
+
+    useEffect(() => {
+        let timer;
+        if (isOtpStep && timeLeft > 0) {
+            timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+        }
+        return () => clearInterval(timer);
+    }, [isOtpStep, timeLeft]);
 
     useEffect(() => {
         if (location.state?.message) {
@@ -56,6 +65,7 @@ const LoginPage = () => {
             const data = await login(email.trim().toLowerCase(), password);
             if (data.requiresOtp) {
                 setIsOtpStep(true);
+                setTimeLeft(30);
                 setSuccessMessage(data.message || 'OTP sent successfully.');
             } else if (data.user) {
                 // OTP bypassed, user returned directly
@@ -67,6 +77,23 @@ const LoginPage = () => {
             const msg = err.response?.data?.message || 'Login failed. Please check your credentials.';
             setError(msg);
             setSuccessMessage('');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResendOtp = async () => {
+        setIsLoading(true);
+        setError('');
+        setSuccessMessage('');
+        try {
+            const data = await login(email.trim().toLowerCase(), password);
+            if (data.requiresOtp) {
+                setSuccessMessage('A new OTP has been sent to your email.');
+                setTimeLeft(30);
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to resend OTP.');
         } finally {
             setIsLoading(false);
         }
@@ -157,7 +184,7 @@ const LoginPage = () => {
                                 <div className="grid gap-2">
                                     <div className="flex items-center">
                                         <Label htmlFor="login-password" className="text-zinc-700 font-medium">Password</Label>
-                                        <Link to="/forgot-password" className="ml-auto inline-block text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+                                        <Link to="/forgot-password" state={{ email }} className="ml-auto inline-block text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
                                             Forgot password?
                                         </Link>
                                     </div>
@@ -203,6 +230,15 @@ const LoginPage = () => {
                                         placeholder="000000"
                                         className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900 text-center tracking-widest text-lg"
                                     />
+                                    <div className="flex justify-end items-center text-xs mt-1">
+                                        {timeLeft > 0 ? (
+                                            <span className="text-zinc-500 font-medium">Resend code in <span className="text-zinc-900">{timeLeft}s</span></span>
+                                        ) : (
+                                            <button type="button" onClick={handleResendOtp} disabled={isLoading} className="text-zinc-900 font-semibold hover:underline disabled:opacity-50">
+                                                Resend OTP
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mt-2">
