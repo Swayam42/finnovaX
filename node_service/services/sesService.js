@@ -9,7 +9,7 @@ const sendEmail = async ({ to, subject, message }) => {
         try {
             const resend = new Resend(process.env.RESEND_API_KEY);
             const response = await resend.emails.send({
-                from: process.env.RESEND_FROM_EMAIL || 'FinnovaX <onboarding@resend.dev>',
+                from: process.env.RESEND_FROM_EMAIL || 'FinnovaX <support@mail.swayamjethi.me>',
                 to: [to],
                 subject: subject,
                 html: message
