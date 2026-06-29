@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, PlusCircle, Bell, FileText, Settings, LogOut, ChevronsUpDown, GalleryVerticalEnd } from 'lucide-react';
+import apiClient from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import {
   Sidebar,
@@ -31,6 +32,34 @@ const AppSidebar = ({ activeTab, onTabChange }) => {
   const userName = user?.name || "Investor";
   const userEmail = user?.email || "investor@example.com";
   const initials = userName.substring(0, 2).toUpperCase();
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    let isMounted = true;
+    const checkNotifications = async () => {
+        try {
+            const res = await apiClient.get(`/notifications?_t=${Date.now()}`);
+            if (isMounted) setUnreadCount(res.data.unreadCount || 0);
+        } catch (e) { }
+    };
+    
+    checkNotifications();
+    const interval = setInterval(checkNotifications, 5000);
+    return () => {
+        isMounted = false;
+        clearInterval(interval);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (activeTab === 'notifications' && unreadCount > 0) {
+        apiClient.patch('/notifications/read-all').then(() => {
+            setUnreadCount(0);
+        }).catch(e => console.error(e));
+    }
+  }, [activeTab, unreadCount]);
 
     const navItems = [
       {
@@ -136,7 +165,12 @@ const AppSidebar = ({ activeTab, onTabChange }) => {
                       tooltip={item.title}
                     >
                       <item.icon />
-                      <span>{item.title}</span>
+                      <span className="flex-1">{item.title}</span>
+                      {item.id === 'notifications' && unreadCount > 0 && (
+                          <div className="ml-auto flex h-5 min-w-[20px] px-1 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white shadow-sm animate-in fade-in zoom-in">
+                              {unreadCount > 99 ? '99+' : unreadCount}
+                          </div>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

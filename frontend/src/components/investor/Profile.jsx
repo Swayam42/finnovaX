@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import apiClient from '../../api/client';
 import { User, Lock, FileText, Download, ShieldCheck, MapPin, Building2 } from 'lucide-react';
@@ -18,10 +19,11 @@ const INDIAN_BANKS = [
 
 const Profile = () => {
     const { user, updateSession } = useAuth();
+    const navigate = useNavigate();
     
     const [profileData, setProfileData] = useState({
         name: user?.name || '',
-        dob: user?.dob || '',
+        dob: user?.dob ? user.dob.split('T')[0] : '',
         phoneNumber: user?.phoneNumber || '',
         street: user?.address?.street || '',
         city: user?.address?.city || '',
@@ -248,7 +250,7 @@ const Profile = () => {
                                 <p className="text-sm font-medium text-zinc-900">Password</p>
                                 <p className="text-xs text-zinc-500">Last changed 3 months ago</p>
                             </div>
-                            <Button variant="outline" className="w-full text-zinc-600">Change Password</Button>
+                            <Button variant="outline" className="w-full text-zinc-600" onClick={() => navigate('/forgot-password')}>Change Password</Button>
                         </CardContent>
                     </Card>
 

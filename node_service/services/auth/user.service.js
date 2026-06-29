@@ -36,6 +36,7 @@ exports.getPublicProfile = (user) => {
         bankAccount: user.bankAccount,
         nominee: user.nominee,
         address: user.address,
-        profileCompleted: user.profileCompleted
+        profileCompleted: user.profileCompleted,
+        dob: user.dob
     };
 };

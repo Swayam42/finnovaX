@@ -2,7 +2,10 @@
 const axios = require('axios');
 const FormData = require('form-data');
 
-const getMlUrl = () => process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+const getMlUrl = () => {
+    const url = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+    return url.replace(/\/+$/, '');
+};
 
 /**
  * Runs account-number OCR verification.
@@ -38,7 +41,8 @@ const verifyKyc = async (files, targetName, targetDob) => {
         formData.append('files', f.buffer, { filename: f.originalname, contentType: f.mimetype });
     });
 
-    const response = await axios.post(`${getMlUrl()}/ocr/verify-kyc`, formData, {
+    const url = `${getMlUrl()}/ocr/verify-kyc`;
+    const response = await axios.post(url, formData, {
         headers: formData.getHeaders()
     });
     return response.data;

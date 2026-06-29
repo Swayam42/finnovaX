@@ -131,19 +131,22 @@ const L2CheckerDesk = () => {
         }
     };
 
-    if (loading && queue.length === 0) {
+    if (loading && queue.length === 0 && !selectedTicket) {
         return (
             <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-zinc-50">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
+                    <span className="text-sm font-medium text-zinc-500 animate-pulse">Loading L2 Workspace...</span>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] overflow-hidden bg-zinc-100 selection:bg-zinc-200">
-            {/* Sidebar: L2 Queue (Zinc Background for Contrast) */}
-            <aside className={`h-full w-full md:w-[340px] shrink-0 border-r border-zinc-200 bg-zinc-50/80 flex flex-col z-10 ${selectedTicket ? 'hidden md:flex' : 'flex'}`}>
-                <div className="p-5 border-b border-zinc-200 bg-zinc-50 flex flex-col">
+        <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] overflow-hidden bg-zinc-50 selection:bg-zinc-200">
+            {/* Sidebar: L2 Queue */}
+            <aside className={`h-full w-full md:w-[360px] shrink-0 border-r border-zinc-200 bg-white flex flex-col z-10 shadow-sm ${selectedTicket ? 'hidden md:flex' : 'flex'}`}>
+                <div className="p-5 border-b border-zinc-200 bg-white flex flex-col">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-base font-semibold flex items-center gap-2 text-zinc-900">
                             <ShieldCheck className="h-4 w-4 text-zinc-500" />
@@ -194,6 +197,22 @@ const L2CheckerDesk = () => {
                                     <p className="text-xs font-medium">System Error</p>
                                     <Button variant="ghost" size="sm" onClick={() => fetchQueue(true)} className="mt-2 h-7 text-xs text-red-600 hover:bg-red-50 border border-red-100 bg-white shadow-sm">Retry</Button>
                                 </motion.div>
+                            ) : loading ? (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={`skel-${i}`} className="p-3 mb-2 rounded-lg border bg-white border-zinc-200 shadow-sm animate-pulse">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="h-3 w-16 bg-zinc-200 rounded"></div>
+                                                <div className="h-4 w-12 bg-zinc-200 rounded-full"></div>
+                                            </div>
+                                            <div className="h-4 w-3/4 bg-zinc-200 rounded mb-3 mt-3"></div>
+                                            <div className="flex justify-between items-center mt-auto pt-2 border-t border-zinc-100">
+                                                <div className="h-4 w-16 bg-zinc-200 rounded-full"></div>
+                                                <div className="h-3 w-20 bg-zinc-200 rounded"></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </motion.div>
                             ) : queue.length === 0 ? (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center p-12 text-zinc-400">
                                     <CheckCircle className="h-6 w-6 mb-3 mx-auto opacity-40 text-emerald-500" />
@@ -239,7 +258,7 @@ const L2CheckerDesk = () => {
                     </div>
                 </ScrollArea>
                 {totalPages > 1 && (
-                    <div className="p-2 border-t border-zinc-200 bg-zinc-50 flex justify-between items-center text-[10px]">
+                    <div className="p-2 border-t border-zinc-200 bg-white flex justify-between items-center text-[10px]">
                         <Button variant="ghost" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)} className="h-6 px-2 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900">PREV</Button>
                         <span className="font-medium text-zinc-500">{page} / {totalPages}</span>
                         <Button variant="ghost" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="h-6 px-2 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900">NEXT</Button>
@@ -250,7 +269,7 @@ const L2CheckerDesk = () => {
             {/* Main Workspace */}
             <main className={`h-full flex-1 flex flex-col relative bg-zinc-50 min-h-0 overflow-hidden ${!selectedTicket ? 'hidden md:flex' : 'flex'}`}>
                 {/* Mobile Back Button */}
-                <div className="md:hidden border-b border-zinc-100 p-2 bg-zinc-50">
+                <div className="md:hidden border-b border-zinc-100 p-2 bg-white shadow-sm">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)} className="text-zinc-600 h-8 hover:bg-zinc-200">
                         <ChevronLeft className="h-4 w-4 mr-1" /> Back
                     </Button>
@@ -297,13 +316,54 @@ const L2CheckerDesk = () => {
                                     </Alert>
                                 )}
 
+                                {/* Compliance & Fraud Risk Dashboard (SaaS Checker View) */}
+                                {(() => {
+                                    const ocrFailed = selectedTicket.documents?.some(d => d.ocrExtraction && !d.ocrExtraction.matchVerified);
+                                    const ocrPassed = selectedTicket.documents?.some(d => d.ocrExtraction && d.ocrExtraction.matchVerified);
+                                    return (
+                                        <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+                                            <div className="bg-zinc-50 border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
+                                                <h3 className="text-xs font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-2">
+                                                    <ShieldCheck className="h-4 w-4 text-zinc-500" /> Compliance & Risk Assessment
+                                                </h3>
+                                            </div>
+                                            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {/* L1 Maker Audit Trail */}
+                                                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3">
+                                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-2">L1 Maker Audit Trail</p>
+                                                    <div className="space-y-2">
+                                                        <p className="text-xs text-zinc-700 leading-relaxed"><span className="font-semibold text-zinc-900">Maker Notes:</span> {selectedTicket.l1Notes || <span className="italic text-zinc-400">No notes provided by L1.</span>}</p>
+                                                        <Badge variant="outline" className="bg-white text-blue-700 border-blue-200 text-[10px] h-5 shadow-sm">Verified by L1 Desk</Badge>
+                                                    </div>
+                                                </div>
+                                                {/* Risk Indicators */}
+                                                <div className="flex flex-col gap-2 justify-center">
+                                                    {selectedTicket.isPotentialFraud ? (
+                                                        <div className="flex items-center gap-2 text-xs font-semibold text-red-700 bg-red-50 p-2 rounded border border-red-100"><ShieldAlert className="h-4 w-4 shrink-0" /> System Flag: Potential Fraud</div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 p-2 rounded border border-emerald-100"><CheckCircle2 className="h-4 w-4 shrink-0" /> No systemic fraud patterns detected</div>
+                                                    )}
+                                                    
+                                                    {ocrFailed ? (
+                                                        <div className="flex items-center gap-2 text-xs font-semibold text-red-700 bg-red-50 p-2 rounded border border-red-100"><AlertTriangle className="h-4 w-4 shrink-0" /> OCR Verification Failed on Document</div>
+                                                    ) : ocrPassed ? (
+                                                        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 p-2 rounded border border-emerald-100"><CheckCircle2 className="h-4 w-4 shrink-0" /> OCR Data Matches CRM Records</div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 bg-zinc-50 p-2 rounded border border-zinc-200"><Cpu className="h-4 w-4 shrink-0" /> No automated extraction data processed</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
                                 {/* Details Grid */}
-                                <div className="grid grid-cols-2 gap-x-8 gap-y-8 pt-6 border-t border-zinc-100">
-                                    <div className="bg-zinc-50/50 p-4 rounded-lg border border-zinc-100">
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-8 pt-8 border-t border-zinc-100">
+                                    <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
                                         <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><User className="h-3 w-3" /> Investor</p>
                                         <p className="text-sm font-semibold text-zinc-900">{selectedTicket.investorName || 'Unknown Investor'}</p>
                                     </div>
-                                    <div className="bg-zinc-50/50 p-4 rounded-lg border border-zinc-100">
+                                    <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
                                         <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Hash className="h-3 w-3" /> Account</p>
                                         <p className="text-sm font-mono font-medium text-zinc-900">{selectedTicket.accountNumber || 'Not Provided'}</p>
                                     </div>
@@ -314,7 +374,7 @@ const L2CheckerDesk = () => {
                                         return Object.entries(selectedTicket.serviceMetadata).map(([k, v]) => {
                                             const fieldDef = stConfig?.requiredFields?.find(f => f.name === k);
                                             return (
-                                                <div key={k} className="bg-zinc-50/50 p-4 rounded-lg border border-zinc-100">
+                                                <div key={k} className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
                                                     <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><FileText className="h-3 w-3" /> {fieldDef?.label || k}</p>
                                                     <p className="text-sm font-semibold text-zinc-900 break-words">{v || '—'}</p>
                                                 </div>
@@ -381,38 +441,35 @@ const L2CheckerDesk = () => {
                             </div>
                         </ScrollArea>
 
-                        {/* Minimal Action Footer */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-zinc-200 p-4 pb-6 z-20 shadow-[0_-15px_40px_-15px_rgba(0,0,0,0.08)]">
-                            <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-end gap-4">
+                        {/* Standard Action Footer */}
+                        <div className="border-t border-zinc-200 bg-white p-4 shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.05)] z-20 shrink-0">
+                            <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-4">
                                 <div className="flex-1 w-full">
                                     <Input
                                         placeholder="Add mandatory checker comments for rejection or return..."
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
-                                        className="h-10 text-sm bg-white border-zinc-300 focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:border-transparent shadow-sm rounded-md placeholder:text-zinc-400 font-medium"
+                                        className="h-10 text-sm bg-zinc-50 border-zinc-200 focus-visible:ring-zinc-400 shadow-sm rounded-md placeholder:text-zinc-400 font-medium w-full"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto bg-zinc-50 p-1 rounded-lg border border-zinc-200 shadow-inner">
+                                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                                     <Button
-                                        variant="ghost"
-                                        size="sm"
+                                        variant="outline"
                                         onClick={() => handleAction('RETURN_TO_L1')}
-                                        className="h-9 px-4 text-xs font-bold text-amber-700 hover:text-amber-800 hover:bg-white hover:shadow-sm transition-all"
+                                        className="text-amber-700 border-amber-200 hover:bg-amber-50 hover:text-amber-800 flex-1 sm:flex-none"
                                     >
                                         Return to L1
                                     </Button>
                                     <Button
-                                        variant="ghost"
-                                        size="sm"
+                                        variant="destructive"
                                         onClick={() => handleAction('REJECT')}
-                                        className="h-9 px-4 text-xs font-bold text-red-600 hover:text-red-700 hover:bg-white hover:shadow-sm transition-all"
+                                        className="flex-1 sm:flex-none"
                                     >
                                         Reject
                                     </Button>
                                     <Button
-                                        size="sm"
                                         onClick={() => handleAction('APPROVE')}
-                                        className="h-9 px-5 text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-white rounded shadow-sm transition-all"
+                                        className="bg-zinc-900 hover:bg-zinc-800 text-white flex-1 sm:flex-none"
                                     >
                                         Approve
                                     </Button>

@@ -71,7 +71,19 @@ def extract_and_verify_kyc(images: list[bytes], target_name: str, target_dob: st
     clean_extracted = re.sub(r'[^A-Z0-9]', '', combined)
     
     clean_name = re.sub(r'[^A-Z0-9]', '', target_name.upper()) if target_name else ""
-    clean_dob = re.sub(r'[^A-Z0-9]', '', target_dob.upper()) if target_dob else ""
+    
+    dob_variations = []
+    if target_dob:
+        m = re.match(r'^(\d{4})-(\d{2})-(\d{2})$', target_dob)
+        if m:
+            y, m_num, d = m.groups()
+            dob_variations.extend([
+                f"{d}{m_num}{y}",  # DDMMYYYY (Standard Indian KYC format)
+                f"{y}{m_num}{d}",  # YYYYMMDD
+                y                  # YYYY (Many older Aadhaars only have year)
+            ])
+        else:
+            dob_variations.append(re.sub(r'[^A-Z0-9]', '', target_dob.upper()))
 
     name_found = False
     dob_found = False
@@ -85,14 +97,15 @@ def extract_and_verify_kyc(images: list[bytes], target_name: str, target_dob: st
         else:
             name_found = clean_name in clean_extracted
 
-    if clean_dob:
-        w_dob = len(clean_dob)
-        if w_dob > 0 and len(clean_extracted) >= w_dob:
-            score_dob = max((difflib.SequenceMatcher(None, clean_dob, clean_extracted[i:i+w_dob]).ratio() 
-                         for i in range(len(clean_extracted) - w_dob + 1)), default=0.0)
-            dob_found = score_dob >= 0.85
-        else:
-            dob_found = clean_dob in clean_extracted
+    if dob_variations:
+        for var in dob_variations:
+            w_dob = len(var)
+            if w_dob > 0 and len(clean_extracted) >= w_dob:
+                score_dob = max((difflib.SequenceMatcher(None, var, clean_extracted[i:i+w_dob]).ratio() 
+                             for i in range(len(clean_extracted) - w_dob + 1)), default=0.0)
+                if score_dob >= 0.85:
+                    dob_found = True
+                    break
 
     match_found = (name_found if target_name else True) and (dob_found if target_dob else True)
 

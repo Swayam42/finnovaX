@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
-import { Clock, ShieldAlert, Cpu, ChevronRight, ChevronLeft, FileText, XCircle, AlertTriangle, Sparkles, Filter, Search, BarChart2 } from 'lucide-react';
+import { Clock, ShieldAlert, Cpu, ChevronRight, ChevronLeft, FileText, XCircle, AlertTriangle, Sparkles, Filter, Search, BarChart2, RefreshCw } from 'lucide-react';
 import { getServiceType } from '../config/serviceTypes';
 import { format } from 'date-fns';
 
@@ -183,10 +183,13 @@ const L1MakerDesk = () => {
         { name: 'Normal', value: normalCount, color: '#3b82f6' }
     ];
 
-    if (loading && queue.length === 0) {
+    if (loading && queue.length === 0 && !selectedTicket) {
         return (
             <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-zinc-50">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
+                    <span className="text-sm font-medium text-zinc-500 animate-pulse">Loading Workspace...</span>
+                </div>
             </div>
         );
     }
@@ -209,8 +212,8 @@ const L1MakerDesk = () => {
                                             <BarChart2 className="h-4 w-4" />
                                         </Button>
                                     </HoverCardTrigger>
-                                    <HoverCardContent className="w-64 p-3 bg-white" align="end">
-                                        <div className="flex items-center justify-between">
+                                    <HoverCardContent className="w-max p-3 bg-white shadow-md border-zinc-200" align="end">
+                                        <div className="flex items-center gap-4">
                                             <div className="h-16 w-16 relative">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <PieChart>
@@ -229,8 +232,8 @@ const L1MakerDesk = () => {
                                     </HoverCardContent>
                                 </HoverCard>
                             )}
-                            <Button variant="ghost" size="sm" onClick={fetchQueue} className="h-8 w-8 p-0 text-zinc-500 hover:text-zinc-900" title="Refresh Queue">
-                                <Clock className="h-4 w-4" />
+                            <Button variant="ghost" size="sm" onClick={fetchQueue} disabled={loading} className="h-8 w-8 p-0 text-zinc-500 hover:text-zinc-900" title="Refresh Queue">
+                                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             </Button>
                         </div>
                     </div>
@@ -304,6 +307,26 @@ const L1MakerDesk = () => {
                                 <p className="text-sm font-medium">Error loading queue</p>
                                 <p className="text-xs mt-1">{fetchError}</p>
                                 <Button variant="outline" size="sm" onClick={fetchQueue} className="mt-4">Retry</Button>
+                            </motion.div>
+                        ) : loading ? (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <div key={`skel-${i}`} className="p-3 mb-3 rounded-lg border bg-white border-zinc-200/60 shadow-sm">
+                                        <div className="flex justify-between items-start mb-2 animate-pulse">
+                                            <div className="h-3 w-16 bg-zinc-200 rounded"></div>
+                                            <div className="h-4 w-12 bg-zinc-200 rounded-full"></div>
+                                        </div>
+                                        <div className="h-4 w-3/4 bg-zinc-200 rounded mb-2 mt-3 animate-pulse"></div>
+                                        <div className="flex items-center gap-2 mb-2 mt-3 animate-pulse">
+                                            <div className="h-5 w-20 bg-zinc-200 rounded-full"></div>
+                                            <div className="h-5 w-16 bg-zinc-200 rounded-full"></div>
+                                        </div>
+                                        <div className="flex justify-between mt-4 pt-2 border-t border-zinc-100 animate-pulse">
+                                            <div className="h-3 w-12 bg-zinc-200 rounded"></div>
+                                            <div className="h-3 w-20 bg-zinc-200 rounded"></div>
+                                        </div>
+                                    </div>
+                                ))}
                             </motion.div>
                         ) : queue.length === 0 ? (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center p-8 text-zinc-500 flex flex-col items-center">
@@ -473,7 +496,7 @@ const L1MakerDesk = () => {
                                                 <h4 className="text-sm font-semibold text-indigo-900 flex items-center gap-2">
                                                     <Sparkles className="h-4 w-4 text-indigo-500" /> AI Ticket Summary
                                                 </h4>
-                                                {(!selectedTicket.aiSummary || selectedTicket.aiSummary.length === 0 || selectedTicket.aiSummary[0] === 'Pending AI Triage') && (
+                                                {(!selectedTicket.aiSummary || selectedTicket.aiSummary.length === 0 || selectedTicket.aiSummary[0] === 'Pending AI Triage' || selectedTicket.aiSummary[0].includes('Failed')) ? (
                                                     <Button 
                                                         onClick={handleSummarize}
                                                         disabled={loadingSummary}
@@ -481,14 +504,31 @@ const L1MakerDesk = () => {
                                                         variant="outline"
                                                         className="h-7 text-xs bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
                                                     >
-                                                        {loadingSummary ? <Cpu className="h-3 w-3 mr-1 animate-pulse" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                                                        {loadingSummary ? <RefreshCw className="h-3 w-3 mr-1 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
                                                         {loadingSummary ? 'Generating...' : 'Generate Summary'}
+                                                    </Button>
+                                                ) : (
+                                                    <Button 
+                                                        onClick={handleSummarize}
+                                                        disabled={loadingSummary}
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="h-7 w-7 p-0 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700"
+                                                        title="Regenerate Summary"
+                                                    >
+                                                        <RefreshCw className={`h-3.5 w-3.5 ${loadingSummary ? 'animate-spin' : ''}`} />
                                                     </Button>
                                                 )}
                                             </div>
                                             
                                             <div className="p-4">
-                                                {selectedTicket.aiSummary && selectedTicket.aiSummary.length > 0 && selectedTicket.aiSummary[0] !== 'Pending AI Triage' ? (
+                                                {loadingSummary ? (
+                                                    <div className="space-y-3">
+                                                        <div className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-indigo-300 mt-1.5 animate-pulse" /><div className="h-4 w-full bg-indigo-100/60 rounded animate-pulse" /></div>
+                                                        <div className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-indigo-300 mt-1.5 animate-pulse" /><div className="h-4 w-5/6 bg-indigo-100/60 rounded animate-pulse" /></div>
+                                                        <div className="flex gap-2"><div className="w-1.5 h-1.5 rounded-full bg-indigo-300 mt-1.5 animate-pulse" /><div className="h-4 w-4/6 bg-indigo-100/60 rounded animate-pulse" /></div>
+                                                    </div>
+                                                ) : selectedTicket.aiSummary && selectedTicket.aiSummary.length > 0 && selectedTicket.aiSummary[0] !== 'Pending AI Triage' && !selectedTicket.aiSummary[0].includes('Failed') ? (
                                                     <ul className="space-y-2">
                                                         {selectedTicket.aiSummary.map((bullet, idx) => (
                                                             <li key={idx} className="flex gap-2 text-sm text-indigo-900/80">
@@ -498,7 +538,7 @@ const L1MakerDesk = () => {
                                                         ))}
                                                     </ul>
                                                 ) : (
-                                                    !loadingSummary && <p className="text-sm text-zinc-500 italic">No summary generated yet.</p>
+                                                    <p className="text-sm text-zinc-500 italic">No summary generated yet.</p>
                                                 )}
                                             </div>
                                         </div>

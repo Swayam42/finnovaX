@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Shield, Key, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
 
 const ProfilePage = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -110,51 +112,15 @@ const ProfilePage = () => {
                         </div>
                     </div>
 
-                    <form onSubmit={handleChangePassword}>
-                        {status && (
-                            <div>
-                                {status.type === 'error' ? <AlertCircle  /> : <CheckCircle2  />}
-                                <span>{status.message}</span>
-                            </div>
-                        )}
-
-                        <div>
-                            <label>Current Password</label>
-                            <input
-                                type="password"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label>New Password</label>
-                            <input
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label>Confirm New Password</label>
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                
-                                required
-                            />
-                        </div>
-
+                    <div>
+                        <p style={{marginTop: '1rem', color: '#666'}}>To update your password, please use the secure password reset flow.</p>
                         <button
-                            type="submit"
-                            disabled={loading}>
-                            {loading ? 'Updating...' : 'Change Password'}
+                            type="button"
+                            onClick={() => navigate('/forgot-password')}
+                            style={{marginTop: '1rem', padding: '0.5rem 1rem', background: '#000', color: '#fff', borderRadius: '4px'}}>
+                            Reset Password
                         </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

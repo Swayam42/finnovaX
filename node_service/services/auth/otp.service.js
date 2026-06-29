@@ -4,8 +4,6 @@ const crypto = require('crypto');
 const { sendEmail } = require('../sesService'); // Existing AWS / Resend service
 const { sendSMS } = require('../snsService'); // Existing AWS / Twilio service
 
-const { sendEmail } = require('../sesService');
-
 /**
  * Generates a 6-digit OTP, hashes it with bcrypt, persists it on the user
  * document, and emails it to the user's actual email address.
@@ -30,8 +28,14 @@ exports.generateAndSendOTP = async (user) => {
     try {
         await sendEmail({
             to: user.email,
-            subject: `FinnovaX Login Verification`,
-            message: `<h1>Your Verification Code</h1><p>Your code is: <strong>${otp}</strong>. It expires in 10 minutes.</p>`
+            subject: 'KFintech Nexus — Login Verification Code',
+            message: `
+                <h1>Your Verification Code</h1>
+                <p>Hello ${user.name || 'Valued Investor'},</p>
+                <p>Your one-time login code is: <strong style="font-size:1.4em">${otp}</strong></p>
+                <p>This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+                <p>If you did not request this code, please ignore this email or contact support immediately.</p>
+            `
         });
     } catch (emailError) {
         console.error('Failed to send OTP email:', emailError);
@@ -48,16 +52,4 @@ exports.generateAndSendOTP = async (user) => {
             console.error('Failed to send OTP SMS:', smsError);
         }
     }
-
-    await sendEmail({
-        to: user.email,
-        subject: 'KFintech Nexus — Login Verification Code',
-        message: `
-            <h1>Your Verification Code</h1>
-            <p>Hello ${user.name || 'Valued Investor'},</p>
-            <p>Your one-time login code is: <strong style="font-size:1.4em">${otp}</strong></p>
-            <p>This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
-            <p>If you did not request this code, please ignore this email or contact support immediately.</p>
-        `
-    });
 };

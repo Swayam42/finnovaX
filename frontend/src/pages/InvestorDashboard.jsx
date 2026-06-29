@@ -6,6 +6,7 @@ import TicketDetail from '../components/investor/TicketDetail';
 import Profile from '../components/investor/Profile';
 import ProfileCompletionModal from '../components/investor/ProfileCompletionModal';
 import Documents from '../components/investor/Documents';
+import NotificationsView from '../components/investor/NotificationsView';
 import { useAuth } from '../context/AuthContext';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -44,7 +45,7 @@ const InvestorDashboard = () => {
             case 'documents':
                 return <Documents />;
             case 'notifications':
-                return <div className="flex h-full items-center justify-center text-zinc-500">Notifications coming soon</div>;
+                return <NotificationsView />;
             default:
                 return <MyTickets onSelectTicket={setSelectedTicketId} />;
         }
