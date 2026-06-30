@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import ThemeToggle from '../../components/common/ThemeToggle';
+import DotBackgroundDemo from "@/components/ui/DotBackgroundDemo";
+import { toast } from "sonner";
 
 const DEMO_CREDENTIALS = [
     { email: 'investor@kfintech.com', role: 'INVESTOR' },
@@ -32,6 +35,7 @@ const LoginPage = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const [showDemo, setShowDemo] = useState(false);
     const [isOtpStep, setIsOtpStep] = useState(false);
+    const [authType, setAuthType] = useState('EMAIL'); // 'EMAIL' or 'GOOGLE'
     const [timeLeft, setTimeLeft] = useState(30);
 
     const from = location.state?.from?.pathname || null;
@@ -46,8 +50,8 @@ const LoginPage = () => {
 
     useEffect(() => {
         if (location.state?.message) {
-            setSuccessMessage(location.state.message);
-            // Clear the message from location state so it doesn't show again on refresh
+            toast.success(location.state.message);
+            setSuccessMessage(location.state.message); // fallback if still needed in DOM
             navigate(location.pathname, { replace: true });
         }
     }, [location, navigate]);
@@ -65,6 +69,7 @@ const LoginPage = () => {
             const data = await login(email.trim().toLowerCase(), password);
             if (data.requiresOtp) {
                 setIsOtpStep(true);
+                setAuthType(data.type || 'EMAIL');
                 setTimeLeft(30);
                 setSuccessMessage(data.message || 'OTP sent successfully.');
             } else if (data.user) {
@@ -102,7 +107,7 @@ const LoginPage = () => {
     const handleOtpSubmit = async (e) => {
         e.preventDefault();
         if (!otp) {
-            setError('Please enter the OTP.');
+            setError(authType === 'GOOGLE' ? 'Please enter the 6-digit code.' : 'Please enter the OTP.');
             return;
         }
         setIsLoading(true);
@@ -131,23 +136,34 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-zinc-50 selection:bg-zinc-200 relative">
-            <Link to="/" className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to home
-            </Link>
-            <div className="w-full max-w-sm">
-                <Card className="rounded-md border-zinc-200 bg-white shadow-sm">
+        <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-black selection:bg-kfintech-primary/30 relative overflow-hidden transition-colors duration-500">
+            <DotBackgroundDemo />
+            {/* Background Glows for Glassmorphism */}
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-kfintech-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+
+            <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-20">
+                <Link to="/" className="flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to home
+                </Link>
+            </div>
+            <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20">
+                <ThemeToggle />
+            </div>
+
+            <div className="w-full max-w-sm relative z-10">
+                <Card className="rounded-2xl border border-white/40 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl shadow-2xl">
                     <CardHeader className="space-y-1 text-center pb-6 pt-8">
                         <div className="flex justify-center mb-4">
-                            <div className="flex h-10 w-10 items-center justify-center rounded bg-zinc-900 text-zinc-50">
-                                <Activity className="h-5 w-5 stroke-[2]" />
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 shadow-inner">
+                                <Activity className="h-6 w-6 stroke-[2]" />
                             </div>
                         </div>
-                        <CardTitle className="text-2xl font-semibold tracking-tight text-zinc-900">
+                        <CardTitle className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                             {isOtpStep ? 'Check your email' : 'Welcome back'}
                         </CardTitle>
-                        <CardDescription className="text-sm text-zinc-500">
+                        <CardDescription className="text-sm text-zinc-500 dark:text-zinc-400">
                             {isOtpStep 
                                 ? 'Enter the 6-digit code sent to your email.' 
                                 : 'Log in to your account'}
@@ -169,7 +185,7 @@ const LoginPage = () => {
                         {!isOtpStep ? (
                             <form onSubmit={handleLoginSubmit} className="grid gap-4" noValidate>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="login-email" className="text-zinc-700 font-medium">Email</Label>
+                                    <Label htmlFor="login-email" className="text-zinc-700 dark:text-zinc-300 font-medium">Email</Label>
                                     <Input
                                         id="login-email"
                                         type="email"
@@ -177,14 +193,14 @@ const LoginPage = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="name@company.com"
-                                        className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900"
+                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                                     />
                                 </div>
 
                                 <div className="grid gap-2">
                                     <div className="flex items-center">
-                                        <Label htmlFor="login-password" className="text-zinc-700 font-medium">Password</Label>
-                                        <Link to="/forgot-password" state={{ email }} className="ml-auto inline-block text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+                                        <Label htmlFor="login-password" className="text-zinc-700 dark:text-zinc-300 font-medium">Password</Label>
+                                        <Link to="/forgot-password" state={{ email }} className="ml-auto inline-block text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
                                             Forgot password?
                                         </Link>
                                     </div>
@@ -196,12 +212,12 @@ const LoginPage = () => {
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             placeholder="••••••••••"
-                                            className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900 pr-10"
+                                            className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all pr-10"
                                         />
                                         <Button 
                                             variant="ghost"
                                             size="sm"
-                                            className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 hover:text-zinc-900 hover:bg-transparent"
+                                            className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-transparent"
                                             type="button" 
                                             onClick={() => setShowPassword(v => !v)}>
                                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -212,40 +228,45 @@ const LoginPage = () => {
                                 <Button 
                                     id="login-submit-btn" 
                                     type="submit" 
-                                    className="w-full mt-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-50 rounded-md"
+                                    className="w-full mt-2 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 rounded-lg shadow-lg hover:shadow-xl transition-all"
                                     disabled={isLoading}>
                                     {isLoading ? 'Authenticating...' : 'Sign in'}
                                 </Button>
                             </form>
                         ) : (
-                            <form onSubmit={handleOtpSubmit} className="grid gap-4" noValidate>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="login-otp" className="text-zinc-700 font-medium">6-Digit Code</Label>
+                            <form onSubmit={handleOtpSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="otp" className="text-zinc-700 dark:text-zinc-300 font-medium">
+                                        {authType === 'GOOGLE' ? 'Authenticator App Code' : '6-Digit Code'}
+                                    </Label>
                                     <Input
-                                        id="login-otp"
+                                        id="otp"
                                         type="text"
                                         maxLength={6}
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                                        placeholder="000000"
-                                        className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900 text-center tracking-widest text-lg"
+                                        placeholder={authType === 'GOOGLE' ? "6-digit code" : "000000"}
+                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all text-center tracking-widest text-lg"
                                     />
-                                    <div className="flex justify-end items-center text-xs mt-1">
-                                        {timeLeft > 0 ? (
-                                            <span className="text-zinc-500 font-medium">Resend code in <span className="text-zinc-900">{timeLeft}s</span></span>
-                                        ) : (
-                                            <button type="button" onClick={handleResendOtp} disabled={isLoading} className="text-zinc-900 font-semibold hover:underline disabled:opacity-50">
-                                                Resend OTP
-                                            </button>
-                                        )}
-                                    </div>
+                                    
+                                    {authType === 'EMAIL' && (
+                                        <div className="flex justify-end items-center text-xs mt-1">
+                                            {timeLeft > 0 ? (
+                                                <span className="text-zinc-500 dark:text-zinc-400 font-medium">Resend code in <span className="text-zinc-900 dark:text-zinc-100">{timeLeft}s</span></span>
+                                            ) : (
+                                                <button type="button" onClick={handleResendOtp} disabled={isLoading} className="text-zinc-900 dark:text-zinc-100 font-semibold hover:underline disabled:opacity-50">
+                                                    Resend OTP
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mt-2">
                                     <Button
                                         variant="outline"
                                         type="button"
-                                        className="rounded-md border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                                        className="rounded-lg border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 bg-transparent"
                                         onClick={() => {
                                             setIsOtpStep(false);
                                             setSuccessMessage('');
@@ -256,7 +277,7 @@ const LoginPage = () => {
                                     <Button 
                                         id="otp-submit-btn" 
                                         type="submit" 
-                                        className="rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-50"
+                                        className="rounded-lg bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 shadow-lg"
                                         disabled={isLoading || otp.length !== 6}>
                                         {isLoading ? 'Verifying...' : 'Verify'}
                                     </Button>
@@ -265,9 +286,9 @@ const LoginPage = () => {
                         )}
                         
                         {!isOtpStep && (
-                            <div className="mt-6 text-center text-sm text-zinc-500">
+                            <div className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
                                 Don't have an account?{' '}
-                                <Link to="/register" className="font-medium text-zinc-900 hover:underline underline-offset-4">
+                                <Link to="/register" className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline underline-offset-4">
                                     Sign up
                                 </Link>
                             </div>
@@ -277,7 +298,7 @@ const LoginPage = () => {
                             <div className="mt-8 grid gap-4">
                                 <Button 
                                     variant="ghost"
-                                    className="text-xs text-zinc-500 hover:text-zinc-900"
+                                    className="text-xs text-zinc-200 hover:text-zinc-50"
                                     id="toggle-demo-credentials" 
                                     type="button" 
                                     onClick={() => setShowDemo(v => !v)}>
@@ -287,14 +308,14 @@ const LoginPage = () => {
 
                                 {showDemo && (
                                     <div className="grid gap-2 text-xs">
-                                        <p className="text-zinc-500 text-center mb-2">Password: <span className="font-medium text-zinc-900">{DEMO_PASSWORD}</span></p>
+                                        <p className="text-zinc-500 text-center mb-2">Password: <span className="font-medium text-zinc-400">{DEMO_PASSWORD}</span></p>
                                         <ul className="grid gap-2">
                                             {DEMO_CREDENTIALS.map((cred) => (
                                                 <li key={cred.email}>
                                                     <Button 
                                                         variant="outline"
                                                         size="sm"
-                                                        className="w-full justify-between h-8 rounded border-zinc-200 hover:bg-zinc-50 text-zinc-700 shadow-none"
+                                                        className="w-full justify-between h-8 rounded border-zinc-200 hover:bg-zinc-10 text-zinc-300 shadow-none"
                                                         type="button" 
                                                         id={`demo-${cred.role.toLowerCase()}`} 
                                                         onClick={() => fillDemo(cred)}>
