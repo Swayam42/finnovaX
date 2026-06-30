@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PasswordRequirementsPopup, PasswordMatchPopup } from "@/components/common/PasswordPopups";
+import ThemeToggle from '../../components/common/ThemeToggle';
+import DotBackgroundDemo from "@/components/ui/DotBackgroundDemo";
 
 const ForgotPasswordPage = () => {
     const location = useLocation();
@@ -100,19 +102,28 @@ const ForgotPasswordPage = () => {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-zinc-50 selection:bg-zinc-200">
-            <div className="w-full max-w-sm">
-                <Card className="rounded-md border-zinc-200 bg-white shadow-sm">
+        <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-black selection:bg-kfintech-primary/30 relative overflow-hidden transition-colors duration-500">
+            <DotBackgroundDemo />
+            {/* Background Glows for Glassmorphism */}
+            <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-kfintech-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+
+            <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20">
+                <ThemeToggle />
+            </div>
+
+            <div className="w-full max-w-sm relative z-10">
+                <Card className="rounded-2xl border border-white/40 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl shadow-2xl">
                     <CardHeader className="space-y-1 text-center pb-6 pt-8">
                         <div className="flex justify-center mb-4">
-                            <div className="flex h-10 w-10 items-center justify-center rounded bg-zinc-900 text-zinc-50">
-                                <Activity className="h-5 w-5 stroke-[2]" />
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 shadow-inner">
+                                <Activity className="h-6 w-6 stroke-[2]" />
                             </div>
                         </div>
-                        <CardTitle className="text-2xl font-semibold tracking-tight text-zinc-900">
+                        <CardTitle className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                             {isOtpStep ? 'Reset Password' : 'Forgot Password'}
                         </CardTitle>
-                        <CardDescription className="text-sm text-zinc-500">
+                        <CardDescription className="text-sm text-zinc-500 dark:text-zinc-400">
                             {isOtpStep 
                                 ? 'Create a new password for your account' 
                                 : 'Enter your email to receive a reset code'}
@@ -134,20 +145,20 @@ const ForgotPasswordPage = () => {
                         {!isOtpStep ? (
                             <form onSubmit={handleSendOtp} className="grid gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email" className="text-zinc-700 font-medium">Email</Label>
+                                    <Label htmlFor="email" className="text-zinc-700 dark:text-zinc-300 font-medium">Email</Label>
                                     <Input
                                         id="email"
                                         type="email"
                                         placeholder="name@company.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900"
+                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                                     />
                                 </div>
 
                                 <Button 
                                     type="submit" 
-                                    className="w-full mt-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-50 rounded-md"
+                                    className="w-full mt-2 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 rounded-lg shadow-lg hover:shadow-xl transition-all"
                                     disabled={isLoading}>
                                     {isLoading ? 'Sending...' : 'Send reset code'}
                                 </Button>
@@ -155,7 +166,7 @@ const ForgotPasswordPage = () => {
                         ) : (
                             <form onSubmit={handleResetPassword} className="grid gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="otp" className="text-zinc-700 font-medium">6-Digit Code</Label>
+                                    <Label htmlFor="otp" className="text-zinc-700 dark:text-zinc-300 font-medium">6-Digit Code</Label>
                                     <Input
                                         id="otp"
                                         type="text"
@@ -163,13 +174,13 @@ const ForgotPasswordPage = () => {
                                         placeholder="000000"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                                        className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900 text-center tracking-widest text-lg"
+                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all text-center tracking-widest text-lg"
                                     />
                                     <div className="flex justify-end items-center text-xs mt-1">
                                         {timeLeft > 0 ? (
-                                            <span className="text-zinc-500 font-medium">Resend code in <span className="text-zinc-900">{timeLeft}s</span></span>
+                                            <span className="text-zinc-500 dark:text-zinc-400 font-medium">Resend code in <span className="text-zinc-900 dark:text-zinc-100">{timeLeft}s</span></span>
                                         ) : (
-                                            <button type="button" onClick={handleResendOtp} disabled={isLoading} className="text-zinc-900 font-semibold hover:underline disabled:opacity-50">
+                                            <button type="button" onClick={handleResendOtp} disabled={isLoading} className="text-zinc-900 dark:text-zinc-100 font-semibold hover:underline disabled:opacity-50">
                                                 Resend OTP
                                             </button>
                                         )}
@@ -177,7 +188,7 @@ const ForgotPasswordPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="password" className="text-zinc-700 font-medium">New Password</Label>
+                                    <Label htmlFor="password" className="text-zinc-700 dark:text-zinc-300 font-medium">New Password</Label>
                                     <div className="relative">
                                         <Input
                                             id="password"
@@ -188,12 +199,12 @@ const ForgotPasswordPage = () => {
                                             onFocus={() => setIsPasswordFocused(true)}
                                             onBlur={() => setIsPasswordFocused(false)}
                                             onCopy={(e) => e.preventDefault()}
-                                            className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900 pr-10"
+                                            className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
                                         />
                                         <Button 
                                             variant="ghost"
                                             size="sm"
-                                            className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 hover:text-zinc-900 hover:bg-transparent"
+                                            className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-transparent"
                                             type="button" 
                                             onPointerDown={(e) => e.preventDefault()}
                                             onClick={() => setShowPassword(v => !v)}>
@@ -207,7 +218,7 @@ const ForgotPasswordPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="confirmPassword" className="text-zinc-700 font-medium">Confirm New Password</Label>
+                                    <Label htmlFor="confirmPassword" className="text-zinc-700 dark:text-zinc-300 font-medium">Confirm New Password</Label>
                                     <div className="relative">
                                         <Input
                                             id="confirmPassword"
@@ -218,12 +229,12 @@ const ForgotPasswordPage = () => {
                                             onFocus={() => setIsConfirmPasswordFocused(true)}
                                             onBlur={() => setIsConfirmPasswordFocused(false)}
                                             onCopy={(e) => e.preventDefault()}
-                                            className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900 pr-10"
+                                            className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
                                         />
                                         <Button 
                                             variant="ghost"
                                             size="sm"
-                                            className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 hover:text-zinc-900 hover:bg-transparent"
+                                            className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-transparent"
                                             type="button" 
                                             onPointerDown={(e) => e.preventDefault()}
                                             onClick={() => setShowConfirmPassword(v => !v)}>
@@ -241,7 +252,7 @@ const ForgotPasswordPage = () => {
                                     <Button
                                         variant="outline"
                                         type="button"
-                                        className="rounded-md border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                                        className="rounded-lg border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 bg-transparent"
                                         onClick={() => {
                                             setIsOtpStep(false);
                                             setSuccessMessage('');
@@ -251,7 +262,7 @@ const ForgotPasswordPage = () => {
                                     </Button>
                                     <Button 
                                         type="submit"
-                                        className="rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-50"
+                                        className="rounded-lg bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 shadow-lg"
                                         disabled={isLoading || otp.length !== 6}>
                                         {isLoading ? 'Resetting...' : 'Reset password'}
                                     </Button>
@@ -259,9 +270,9 @@ const ForgotPasswordPage = () => {
                             </form>
                         )}
 
-                        <div className="mt-6 text-center text-sm text-zinc-500">
+                        <div className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
                             Remembered it?{' '}
-                            <Link to="/login" state={{ email }} className="font-medium text-zinc-900 hover:underline underline-offset-4">
+                            <Link to="/login" state={{ email }} className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline underline-offset-4">
                                 Log in
                             </Link>
                         </div>
