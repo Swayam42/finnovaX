@@ -10,7 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PasswordRequirementsPopup, PasswordMatchPopup } from "@/components/common/PasswordPopups";
-
+import ThemeToggle from '../../components/common/ThemeToggle';
+import CometCardDemo from '../../components/CometCardDemo';
+import GridBackground from "@/components/ui/GridBackground";
+import DotBackgroundDemo from "@/components/ui/DotBackgroundDemo";
+import { toast } from "sonner";
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
@@ -83,27 +87,42 @@ const RegisterPage = () => {
       navigate('/login', { state: { message: 'Registration successful! Please login.' } });
     } catch (err) {
       form.setError('root', { message: err.message });
+      toast.error(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-zinc-50 selection:bg-zinc-200 relative">
-      <Link to="/" className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to home
-      </Link>
-      <div className="w-full max-w-sm">
-        <Card className="rounded-md border-zinc-200 bg-white shadow-sm">
-          <CardHeader className="space-y-1 text-center pb-6 pt-8">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-black selection:bg-kfintech-primary/30 relative overflow-hidden transition-colors duration-500">
+      {/*<GridBackground/>*/}
+      <DotBackgroundDemo/>
+      {/* Background Glows for Glassmorphism */}
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-kfintech-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-20">
+        <Link to="/" className="flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to home
+        </Link>
+      </div>
+      <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20">
+          <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-5xl relative z-10 mt-10 mb-10 flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-24">
+        {/* Registration Form */}
+        <div className="w-full max-w-sm">
+          <Card className="rounded-2xl border border-white/40 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl shadow-2xl">
+            <CardHeader className="space-y-1 text-center pb-6 pt-8">
             <div className="flex justify-center mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded bg-zinc-900 text-zinc-50">
-                <Activity className="h-5 w-5 stroke-[2]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 shadow-inner">
+                <Activity className="h-6 w-6 stroke-[2]" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-semibold tracking-tight text-zinc-900">Create an account</CardTitle>
-            <CardDescription className="text-sm text-zinc-500">
+            <CardTitle className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Create an account</CardTitle>
+            <CardDescription className="text-sm text-zinc-500 dark:text-zinc-400">
               Enter your details to get started
             </CardDescription>
           </CardHeader>
@@ -117,11 +136,11 @@ const RegisterPage = () => {
               )}
 
               <div className="grid gap-2">
-                <Label htmlFor="name" className="text-zinc-700 font-medium">Full Name</Label>
+                <Label htmlFor="name" className="text-zinc-700 dark:text-zinc-300 font-medium">Full Name</Label>
                 <Input
                   id="name"
                   placeholder="Jane Doe"
-                  className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900"
+                  className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                   {...form.register("name")}
                 />
                 {form.formState.errors.name && (
@@ -130,12 +149,12 @@ const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="email" className="text-zinc-700 font-medium">Email</Label>
+                <Label htmlFor="email" className="text-zinc-700 dark:text-zinc-300 font-medium">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="name@company.com"
-                  className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900"
+                  className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                   {...form.register("email")}
                 />
                 {form.formState.errors.email && (
@@ -144,9 +163,9 @@ const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="phoneNumber" className="text-zinc-700 font-medium">Phone Number <span className="text-zinc-400 font-normal">(Optional)</span></Label>
+                <Label htmlFor="phoneNumber" className="text-zinc-700 dark:text-zinc-300 font-medium">Phone Number <span className="text-zinc-400 dark:text-zinc-500 font-normal">(Optional)</span></Label>
                 <div className="flex gap-2">
-                  <div className="flex items-center justify-center w-[50px] border border-zinc-200 rounded-md bg-zinc-50 text-xs text-zinc-500 font-medium cursor-not-allowed select-none">
+                  <div className="flex items-center justify-center w-[50px] border border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-500 dark:text-zinc-400 font-medium cursor-not-allowed select-none transition-colors">
                     +91
                   </div>
                   <Input
@@ -154,7 +173,7 @@ const RegisterPage = () => {
                     type="tel"
                     maxLength={10}
                     placeholder="0000000000"
-                    className="flex-1 bg-transparent border-zinc-200 focus-visible:ring-zinc-900"
+                    className="flex-1 bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                     {...phoneRegister}
                     onChange={(e) => {
                       e.target.value = e.target.value.replace(/\D/g, '');
@@ -168,12 +187,12 @@ const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2 relative">
-                <Label htmlFor="password" className="text-zinc-700 font-medium">Password</Label>
+                <Label htmlFor="password" className="text-zinc-700 dark:text-zinc-300 font-medium">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900 pr-10"
+                    className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
                     onFocus={() => setIsPasswordFocused(true)}
                     onCopy={(e) => e.preventDefault()}
                     {...passwordRegister}
@@ -185,7 +204,7 @@ const RegisterPage = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 hover:text-zinc-900 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-transparent"
                     type="button"
                     onPointerDown={(e) => e.preventDefault()}
                     onClick={(e) => {
@@ -207,12 +226,12 @@ const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2 relative">
-                <Label htmlFor="confirmPassword" className="text-zinc-700 font-medium">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-zinc-700 dark:text-zinc-300 font-medium">Confirm Password</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
-                    className="bg-transparent border-zinc-200 focus-visible:ring-zinc-900 pr-10"
+                    className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
                     onFocus={() => setIsConfirmPasswordFocused(true)}
                     onCopy={(e) => e.preventDefault()}
                     {...confirmPasswordRegister}
@@ -224,7 +243,7 @@ const RegisterPage = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 hover:text-zinc-900 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-9 px-3 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-transparent"
                     type="button"
                     onPointerDown={(e) => e.preventDefault()}
                     onClick={(e) => {
@@ -251,7 +270,7 @@ const RegisterPage = () => {
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     id="terms"
-                    className="border-zinc-300 data-[state=checked]:bg-zinc-900 data-[state=checked]:text-zinc-50 mt-1"
+                    className="border-zinc-300 dark:border-zinc-700 data-[state=checked]:bg-zinc-900 dark:data-[state=checked]:bg-white data-[state=checked]:text-zinc-50 dark:data-[state=checked]:text-zinc-900 mt-1"
                     checked={form.watch("agreeTerms")}
                     onCheckedChange={(checked) => {
                       form.setValue("agreeTerms", checked, { shouldValidate: true })
@@ -259,12 +278,12 @@ const RegisterPage = () => {
                   />
                   <label
                     htmlFor="terms"
-                    className="text-xs text-zinc-500 leading-tight"
+                    className="text-xs text-zinc-500 dark:text-zinc-400 leading-tight"
                   >
                     By clicking continue, you agree to our{' '}
-                    <a href="#" className="underline underline-offset-2 hover:text-zinc-900">Terms of Service</a>
+                    <a href="#" className="underline underline-offset-2 hover:text-zinc-900 dark:hover:text-zinc-100">Terms of Service</a>
                     {' '}and{' '}
-                    <a href="#" className="underline underline-offset-2 hover:text-zinc-900">Privacy Policy</a>.
+                    <a href="#" className="underline underline-offset-2 hover:text-zinc-900 dark:hover:text-zinc-100">Privacy Policy</a>.
                   </label>
                 </div>
                 {form.formState.errors.agreeTerms && (
@@ -272,19 +291,25 @@ const RegisterPage = () => {
                 )}
               </div>
 
-              <Button type="submit" disabled={isLoading || !form.watch("agreeTerms")} className="w-full mt-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-50 rounded-md">
+              <Button type="submit" disabled={isLoading || !form.watch("agreeTerms")} className="w-full mt-2 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 rounded-lg shadow-lg hover:shadow-xl transition-all">
                 {isLoading ? 'Creating account...' : 'Create account'}
               </Button>
             </form>
 
-            <div className="mt-6 text-center text-sm text-zinc-500">
+            <div className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
               Already have an account?{' '}
-              <Link to="/login" className="font-medium text-zinc-900 hover:underline underline-offset-4">
+              <Link to="/login" className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline underline-offset-4">
                 Log in
               </Link>
             </div>
           </CardContent>
         </Card>
+        </div>
+
+        {/* VIP Comet Card (Right Side) */}
+        <div className="hidden md:flex w-full max-w-sm items-center justify-center">
+            <CometCardDemo />
+        </div>
       </div>
     </div>
   );
