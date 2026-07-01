@@ -80,8 +80,8 @@ const UserSchema = new mongoose.Schema({
     },
     twoFactorType: {
         type: String,
-        enum: ['GOOGLE', 'EMAIL', 'PHONE'],
-        default: 'EMAIL'
+        enum: ['NONE', 'GOOGLE', 'EMAIL', 'PHONE'],
+        default: 'NONE'
     }
 }, { timestamps: true });
 

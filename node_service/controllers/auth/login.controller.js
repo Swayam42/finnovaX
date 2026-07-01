@@ -3,6 +3,7 @@ const passwordService = require('../../services/auth/password.service');
 const otpService = require('../../services/auth/otp.service');
 const tokenService = require('../../services/auth/token.service');
 const cookieService = require('../../services/auth/cookie.service');
+const speakeasy = require('speakeasy');
 
 exports.initiateLogin = async (req, res) => {
     try {
@@ -43,13 +44,25 @@ exports.initiateLogin = async (req, res) => {
             });
         }
 
-        // Fallback to EMAIL for 'EMAIL', 'PHONE' (disabled), or missing type
-        await otpService.generateAndSendOTP(user);
+        if (user.twoFactorType === 'EMAIL') {
+            await otpService.generateAndSendOTP(user);
+            return res.status(200).json({ 
+                message: 'OTP sent via email.', 
+                requiresOtp: true, 
+                type: 'EMAIL', 
+                email: user.email 
+            });
+        }
+
+        // If NONE or unrecognized type, allow instant login
+        const accessToken = tokenService.generateAccessToken(user);
+        const refreshToken = await tokenService.generateRefreshToken(user._id);
+        cookieService.setAuthCookies(res, accessToken, refreshToken);
         return res.status(200).json({ 
-            message: 'OTP sent via email.', 
-            requiresOtp: true, 
-            type: 'EMAIL', 
-            email: user.email 
+            message: 'Login successful.', 
+            requiresOtp: false, 
+            user: userService.getPublicProfile(user),
+            accessToken 
         });
     } catch (error) {
         console.error('[Auth] Login init error:', error);
@@ -69,10 +82,17 @@ exports.verifyOTP = async (req, res) => {
         }
 
         if (user.twoFactorType === 'GOOGLE' && user.twoFactorEnabled) {
-            const { verify } = require('otplib');
-            const isValid = verify({ token: otp, secret: user.twoFactorSecret });
+            if (!user.twoFactorSecret) {
+                return res.status(500).json({ message: '2FA secret missing. Please reconfigure your authenticator.' });
+            }
+            const isValid = speakeasy.totp.verify({
+                secret: user.twoFactorSecret,
+                encoding: 'base32',
+                token: otp.trim(),
+                window: 1
+            });
             if (!isValid) {
-                return res.status(401).json({ message: 'Invalid Google Authenticator code.' });
+                return res.status(401).json({ message: 'Invalid Authenticator code. Please try again.' });
             }
         } else {
             // Email OTP Verification

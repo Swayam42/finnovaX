@@ -51,8 +51,8 @@ exports.rotateRefreshToken = async (rawOldToken) => {
     const user = await User.findById(storedToken.userId);
     if (!user) throw new Error('User not found.');
 
-    const newRefreshToken = await this.generateRefreshToken(storedToken.userId, storedToken.familyId);
-    const newAccessToken = this.generateAccessToken(user);
+    const newRefreshToken = await exports.generateRefreshToken(storedToken.userId, storedToken.familyId);
+    const newAccessToken = exports.generateAccessToken(user);
 
     return { newAccessToken, newRefreshToken, userId: storedToken.userId };
 };

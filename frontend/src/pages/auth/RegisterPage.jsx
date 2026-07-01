@@ -94,7 +94,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-black selection:bg-kfintech-primary/30 relative overflow-hidden transition-colors duration-500">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#faf9f6] dark:bg-zinc-950 selection:bg-kfintech-primary/30 relative overflow-hidden transition-colors duration-500">
       {/*<GridBackground/>*/}
       <DotBackgroundDemo/>
       {/* Background Glows for Glassmorphism */}
@@ -114,7 +114,7 @@ const RegisterPage = () => {
       <div className="w-full max-w-5xl relative z-10 mt-10 mb-10 flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-24">
         {/* Registration Form */}
         <div className="w-full max-w-sm">
-          <Card className="rounded-2xl border border-white/40 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl shadow-2xl">
+          <Card className="rounded-2xl border border-black/5 dark:border-white/5 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
             <CardHeader className="space-y-1 text-center pb-6 pt-8">
             <div className="flex justify-center mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 shadow-inner">

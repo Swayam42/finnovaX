@@ -3,7 +3,7 @@ import apiClient from '../../api/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     UploadCloud, CheckCircle2, AlertCircle, Send, FileText,
-    Clock, ChevronLeft, Check, ArrowRight, X
+    Clock, ChevronLeft, Check, ArrowRight, X, Sparkles, ShieldAlert, RefreshCcw
 } from 'lucide-react';
 import { SERVICE_TYPE_LIST, getServiceType } from '../../config/serviceTypes';
 import { useAuth } from '../../context/AuthContext';
@@ -206,8 +206,11 @@ const CreateTicketFlow = ({ onTabChange }) => {
         if (selectedType) goTo(2);
     };
     
-    const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const handleChange = (e) => {
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
     const handleMetadataChange = (e) => setServiceMetadata(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
 
     const handleGoToReview = (e) => {
         e.preventDefault();
@@ -398,6 +401,7 @@ const CreateTicketFlow = ({ onTabChange }) => {
                                             className="resize-none bg-white dark:bg-[#131313] border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500" 
                                         />
                                     </div>
+
 
                                     <div className="space-y-2">
                                         <Label className="text-zinc-900 dark:text-zinc-100">
