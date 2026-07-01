@@ -6,12 +6,15 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile
-    container_name: kfintech_backend
+    container_name: backendfinnovaX
     ports:
       - "8000:8000"
     environment:
       - ENVIRONMENT=development
       - HOST=0.0.0.0
+      - OLLAMA_URL=http://ollama:11434/api/generate
+      - CHAT_MODEL=llama3.2:1b
+      - GEMINI_API_KEY=
     volumes:
       - ./backend:/app
     deploy:
@@ -27,7 +30,7 @@ services:
   # Local MongoDB Replica Set for strict transactions
   mongodb:
     image: mongo:latest
-    container_name: kfintech_mongo
+    container_name: mongofinnovaX
     command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     ports:
       - "27018:27017"
@@ -39,7 +42,7 @@ services:
     build:
       context: ./node_service
       dockerfile: Dockerfile
-    container_name: kfintech_node
+    container_name: nodefinnovaX
     ports:
       - "5000:5000"
     environment:
@@ -47,6 +50,7 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/kfintech_nexus?directConnection=true
       - ML_SERVICE_URL=http://backend:8000
       - AWS_ENDPOINT_URL=http://localstack:4566
+      - PUBLIC_S3_URL=http://localhost:4566
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_REGION=ap-south-1
@@ -56,6 +60,7 @@ services:
     depends_on:
       - mongodb
       - backend
+      - localstack
     networks:
       - kfintech-network
 
@@ -64,7 +69,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: kfintech_frontend
+    container_name: frontendfinnovaX
     ports:
       - "5173:5173"
     volumes:
@@ -78,7 +83,7 @@ services:
   # Local Llama 3 AI Engine
   ollama:
     image: ollama/ollama:latest
-    container_name: kfintech_ollama
+    container_name: ollamafinnovaX
     ports:
       - "11434:11434"
     volumes:
@@ -97,12 +102,13 @@ services:
   # AWS LocalStack
   localstack:
     image: localstack/localstack:2.3.2
-    container_name: kfintech_localstack
+    container_name: localstackfinnovaX
     ports:
       - "4566:4566"
     environment:
       - DEBUG=1
       - AWS_DEFAULT_REGION=ap-south-1
+      - SERVICES=s3,ses,sns
     networks:
       - kfintech-network
 
@@ -113,5 +119,4 @@ networks:
 volumes:
   ollama_data:
   localstack_data:
-
 

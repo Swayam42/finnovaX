@@ -121,7 +121,7 @@ const TicketDetail = ({ ticketId, onBack }) => {
                             <div className="space-y-6">
                                 <div>
                                     <div className="flex items-center gap-2 mb-3">
-                                        <Clock className="w-4 h-4 text-zinc-500 dark:text-zinc-400" /> 
+                                        <Clock className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                                         <h3 className="font-medium text-zinc-900 dark:text-zinc-100">SLA Progress</h3>
                                         <span className="ml-auto text-xs text-zinc-500 dark:text-zinc-400">
                                             Deadline: {ticket.slaTimeline?.deadline ? format(new Date(ticket.slaTimeline.deadline), 'MMM dd, yyyy') : 'N/A'}
@@ -129,7 +129,7 @@ const TicketDetail = ({ ticketId, onBack }) => {
                                     </div>
                                     <SLAProgressBar currentStatus={ticket.status} timeline={timeline} />
                                 </div>
-                                
+
                                 <Separator className="bg-zinc-200 dark:bg-zinc-800" />
 
                                 <div>
@@ -204,7 +204,7 @@ const TicketDetail = ({ ticketId, onBack }) => {
                             )}
                         </CardContent>
                     </Card>
-                    
+
                     <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-[#131313]">
                         <CardContent className="p-5 space-y-4">
                             <div>
@@ -213,7 +213,7 @@ const TicketDetail = ({ ticketId, onBack }) => {
                                     {ticket.assignedPriority || 'UNASSIGNED'}
                                 </Badge>
                             </div>
-                            
+
                             {ticket.isPotentialFraud && (
                                 <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg flex items-start gap-2">
                                     <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
@@ -238,8 +238,8 @@ const TicketDetail = ({ ticketId, onBack }) => {
                                     </div>
                                 )}
                                 <form onSubmit={handleResubmit} className="space-y-3">
-                                    <Input 
-                                        type="file" 
+                                    <Input
+                                        type="file"
                                         onChange={(e) => setResubmitFile(e.target.files[0])}
                                         required
                                         className="bg-white border-red-200 text-sm file:text-red-700"

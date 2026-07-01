@@ -12,6 +12,10 @@ router.post('/', authenticate, authorize('INVESTOR', 'ADMIN_SUPER'), upload.arra
 // Get tickets for logged-in user
 router.get('/', authenticate, ticketController.getTickets);
 
+// Route: POST /api/tickets/sentiment
+// Preview sentiment and priority before submission
+router.post('/sentiment', authenticate, authorize('INVESTOR', 'ADMIN_SUPER', 'ADMIN_L1', 'ADMIN_L2'), ticketController.previewSentiment);
+
 // Route: GET /api/tickets/:id
 // Get specific ticket and timeline
 router.get('/:id', authenticate, ticketController.getTicketById);

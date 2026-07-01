@@ -23,7 +23,7 @@ const MyTickets = ({ onSelectTicket }) => {
                 const filters = { page, limit: 10 };
                 if (filter !== 'ALL') filters.status = filter;
                 if (serviceFilter !== 'ALL') filters.serviceType = serviceFilter;
-                
+
                 const data = await fetchTickets(filters);
                 setTotalPages(data.pagination?.pages || 1);
             } catch (error) {
@@ -64,19 +64,19 @@ const MyTickets = ({ onSelectTicket }) => {
                     <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">My Tickets</h1>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Track your service requests and SLA timelines.</p>
                 </div>
-                
+
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="relative w-full sm:w-[200px]">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                        <Input 
-                            type="text" 
-                            placeholder="Search..." 
+                        <Input
+                            type="text"
+                            placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-9 bg-white dark:bg-[#131313] border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                         />
                     </div>
-                    
+
                     <Select value={filter} onValueChange={(val) => { setFilter(val); setPage(1); }}>
                         <SelectTrigger className="w-[140px] bg-white dark:bg-[#131313] text-xs sm:text-sm border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100">
                             <SelectValue placeholder="All Status" />
@@ -107,8 +107,8 @@ const MyTickets = ({ onSelectTicket }) => {
             <div className="grid gap-3">
                 {filteredTickets.length > 0 ? (
                     filteredTickets.map(ticket => (
-                        <Card 
-                            key={ticket._id} 
+                        <Card
+                            key={ticket._id}
                             onClick={() => onSelectTicket(ticket._id)}
                             className="cursor-pointer bg-white dark:bg-[#131313] border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200 group"
                         >

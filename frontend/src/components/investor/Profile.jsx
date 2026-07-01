@@ -47,7 +47,7 @@ const Profile = () => {
     const [timeLeft, setTimeLeft] = useState(30);
     const [isSettingUp2FA, setIsSettingUp2FA] = useState(false);
     const [is2FAEnabled, setIs2FAEnabled] = useState(user?.twoFactorEnabled || false);
-    const [twoFactorType, setTwoFactorType] = useState(user?.twoFactorType || 'EMAIL');
+    const [twoFactorType, setTwoFactorType] = useState(user?.twoFactorType || 'NONE');
 
     useEffect(() => {
         let timer;
@@ -181,7 +181,7 @@ const Profile = () => {
             setLoadingProfile(true);
             const res = await authApi.updateProfile({ twoFactorType: type });
             setTwoFactorType(type);
-            toast.success(`2FA preference updated to ${type === 'GOOGLE' ? 'Authenticator App' : 'Email OTP'}`);
+            toast.success(`2FA preference updated to ${type === 'GOOGLE' ? 'Authenticator App' : type === 'EMAIL' ? 'Email OTP' : 'None'}`);
             updateSession(res.data.user);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to update 2FA preference');
@@ -362,34 +362,25 @@ const Profile = () => {
                             </div>
                             
                             <div className="space-y-3 pt-2">
-                                <label className="flex items-center space-x-3 cursor-pointer group">
-                                    <Checkbox 
-                                        checked={twoFactorType === 'EMAIL'}
-                                        onCheckedChange={(checked) => checked && handle2FATypeChange('EMAIL')}
-                                        className="w-4 h-4 rounded-sm border-zinc-300 dark:border-zinc-700 data-[state=checked]:bg-zinc-900 data-[state=checked]:text-white dark:data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:text-zinc-900 transition-colors"
-                                    />
-                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">Email (OTP)</span>
-                                </label>
-                                
-                                <label className="flex items-center space-x-3 cursor-pointer group">
-                                    <Checkbox 
-                                        checked={twoFactorType === 'GOOGLE'}
-                                        onCheckedChange={(checked) => checked && handle2FATypeChange('GOOGLE')}
-                                        className="w-4 h-4 rounded-sm border-zinc-300 dark:border-zinc-700 data-[state=checked]:bg-zinc-900 data-[state=checked]:text-white dark:data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:text-zinc-900 transition-colors"
-                                    />
-                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">Authenticator App</span>
-                                </label>
-
-                                <label className="flex items-center space-x-3 cursor-not-allowed opacity-50">
-                                    <Checkbox 
-                                        disabled
-                                        className="w-4 h-4 rounded-sm border-zinc-200 dark:border-zinc-800"
-                                    />
-                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                        Phone (SMS)
-                                        <span className="text-[10px] bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded-full">Coming Soon</span>
-                                    </span>
-                                </label>
+                                <Select value={twoFactorType} onValueChange={handle2FATypeChange}>
+                                    <SelectTrigger className="w-full bg-white dark:bg-[#131313] border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100">
+                                        <SelectValue placeholder="Select 2FA Method" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white dark:bg-[#1A1A1A] border-zinc-200 dark:border-zinc-800">
+                                        <SelectItem value="NONE" className="text-zinc-900 dark:text-zinc-100 cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800">
+                                            None (Not Recommended)
+                                        </SelectItem>
+                                        <SelectItem value="EMAIL" className="text-zinc-900 dark:text-zinc-100 cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800">
+                                            Email (OTP)
+                                        </SelectItem>
+                                        <SelectItem value="GOOGLE" className="text-zinc-900 dark:text-zinc-100 cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800">
+                                            Authenticator App
+                                        </SelectItem>
+                                        <SelectItem value="PHONE" disabled className="opacity-50">
+                                            Phone (SMS) - Coming Soon
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {twoFactorType === 'GOOGLE' && !is2FAEnabled && (

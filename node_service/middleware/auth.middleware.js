@@ -36,3 +36,19 @@ exports.authorize = (...allowedRoles) => {
         next();
     };
 };
+
+exports.optionalAuthenticate = (req, res, next) => {
+    let token = req.cookies.kfintech_access_token;
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+    if (!token) return next();
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = { ...decoded, id: decoded.userId }; 
+    } catch (err) {
+        // Just ignore errors
+    }
+    next();
+};

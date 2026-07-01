@@ -24,13 +24,17 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const clearAuthStorage = () => {
+            localStorage.removeItem('kfintech_access_token');
+            localStorage.removeItem('kfintech_user');
+        };
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
             // Avoid infinite loops if the refresh endpoint itself returns 401
             if (originalRequest.url.includes('/auth/refresh') || originalRequest.url.includes('/auth/login')) {
-                localStorage.removeItem('kfintech_user');
+                clearAuthStorage();
                 // Only redirect to login if we are on a protected route (not landing page or register)
                 const currentPath = window.location.pathname;
                 if (!currentPath.includes('/login') && !currentPath.includes('/register') && currentPath !== '/') {
@@ -52,7 +56,7 @@ apiClient.interceptors.response.use(
                 return apiClient(originalRequest);
             } catch (refreshError) {
                 // Refresh token invalid or expired
-                localStorage.removeItem('kfintech_user');
+                clearAuthStorage();
                 const currentPath = window.location.pathname;
                 if (!currentPath.includes('/login') && !currentPath.includes('/register') && currentPath !== '/') {
                     window.location.href = '/login';

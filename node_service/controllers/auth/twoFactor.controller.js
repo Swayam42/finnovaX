@@ -1,6 +1,11 @@
-const { generateSecret, generateURI, verify } = require('otplib');
+const speakeasy = require('speakeasy');
 const User = require('../../models/User');
 
+/**
+ * Generate a new TOTP secret and return QR code URL.
+ * The secret is saved to the user but twoFactorEnabled remains false
+ * until they successfully verify a code from their authenticator app.
+ */
 exports.generate2FA = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -8,61 +13,82 @@ exports.generate2FA = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Generate a random secret
-        const secret = generateSecret();
-        
-        // Save the secret in the database (temporary, until verified)
-        await User.findByIdAndUpdate(req.user.id, {
-            twoFactorSecret: secret,
-            twoFactorEnabled: false // explicitly false until they verify it
+        // Generate a new TOTP secret using speakeasy
+        const secret = speakeasy.generateSecret({
+            name: `FinnovaX (${user.email})`,
+            length: 20,
+            issuer: 'FinnovaX'
         });
 
-        // Create the otpauth URI
-        const appName = process.env.APP_NAME || 'FinnovaX';
-        const otpauthUrl = generateURI({ issuer: appName, label: user.email, secret });
+        // Persist the base32 secret (not yet enabled — pending verification)
+        await User.findByIdAndUpdate(req.user.id, {
+            twoFactorSecret: secret.base32,
+            twoFactorEnabled: false
+        });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            secret,
-            otpauthUrl
+            secret: secret.base32,
+            otpauthUrl: secret.otpauth_url
         });
     } catch (error) {
-        console.error('Error generating 2FA:', error);
-        res.status(500).json({ success: false, message: 'Server error generating 2FA' });
+        console.error('[2FA] Error generating TOTP secret:', error);
+        return res.status(500).json({ success: false, message: 'Server error generating 2FA' });
     }
 };
 
+/**
+ * Verify a TOTP code from the authenticator app.
+ * Only enables 2FA on the user account if the code is valid.
+ */
 exports.verify2FA = async (req, res) => {
     try {
         const { token } = req.body;
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'Token is required' });
+
+        if (!token || !/^\d{6}$/.test(token.trim())) {
+            return res.status(400).json({ success: false, message: 'A valid 6-digit token is required.' });
         }
 
-        // Fetch user with select('+twoFactorSecret') since it is hidden by default
+        // Must explicitly select the hidden twoFactorSecret field
         const user = await User.findById(req.user.id).select('+twoFactorSecret');
-        if (!user || !user.twoFactorSecret) {
-            return res.status(400).json({ success: false, message: '2FA not initialized. Please generate a QR code first.' });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
         }
 
-        const isValid = verify({ token, secret: user.twoFactorSecret });
-
-        if (isValid) {
-            // Enable 2FA and set type
-            user.twoFactorEnabled = true;
-            user.twoFactorType = 'GOOGLE';
-            await user.save();
-
-            return res.status(200).json({
-                success: true,
-                message: '2FA Google authenticated successfully. OTP 2FA coming soon.'
+        if (!user.twoFactorSecret) {
+            return res.status(400).json({
+                success: false,
+                message: '2FA not initialized. Please generate a QR code first.'
             });
-        } else {
-            return res.status(400).json({ success: false, message: 'Invalid 2FA token' });
         }
+
+        // Verify TOTP code with a ±1 window (allows for 30s clock drift)
+        const isValid = speakeasy.totp.verify({
+            secret: user.twoFactorSecret,
+            encoding: 'base32',
+            token: token.trim(),
+            window: 1
+        });
+
+        if (!isValid) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid authenticator code. Please try again with a fresh code.'
+            });
+        }
+
+        // Code is valid — activate 2FA
+        user.twoFactorEnabled = true;
+        user.twoFactorType = 'GOOGLE';
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Google Authenticator 2FA has been successfully enabled.'
+        });
     } catch (error) {
-        console.error('Error verifying 2FA:', error);
-        res.status(500).json({ success: false, message: 'Server error verifying 2FA' });
+        console.error('[2FA] Error verifying TOTP code:', error);
+        return res.status(500).json({ success: false, message: 'Server error verifying 2FA' });
     }
 };
 
@@ -78,14 +104,14 @@ exports.generateEmail2FA = async (req, res) => {
         }
 
         await otpService.generateAndSendOTP(user);
-        
+
         return res.status(200).json({
             success: true,
             message: 'OTP sent to email successfully'
         });
     } catch (error) {
-        console.error('Error generating email 2FA:', error);
-        res.status(500).json({ success: false, message: 'Server error generating email 2FA' });
+        console.error('[2FA] Error generating email OTP:', error);
+        return res.status(500).json({ success: false, message: 'Server error generating email 2FA' });
     }
 };
 
@@ -106,41 +132,35 @@ exports.verifyEmail2FA = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid OTP' });
         }
 
-        // Clear OTP state
+        // Clear OTP state and activate email 2FA
         user.otpCode = undefined;
         user.otpExpires = undefined;
         user.twoFactorType = 'EMAIL';
         await user.save();
 
-        // Send confirmation email asynchronously
-        try {
-            await sendEmail({
-                to: user.email,
-                subject: 'FinnovaX — 2FA Preference Updated',
-                message: `
-                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fbfbfb; padding: 40px 20px; color: #18181b; line-height: 1.6;">
-                        <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 40px; border: 1px solid #e4e4e7; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
-                            <h2 style="color: #18181b; font-size: 20px; font-weight: 600; margin-top: 0;">2FA Preference Updated</h2>
-                            <p style="color: #52525b; font-size: 15px; margin-bottom: 24px;">Hello ${user.name || 'Valued Investor'},</p>
-                            <p style="color: #52525b; font-size: 15px; margin-bottom: 24px;">This email is to confirm that your Two-Factor Authentication preference has been successfully changed to <strong>Email (OTP)</strong>.</p>
-                            <p style="color: #52525b; font-size: 15px; margin-bottom: 0;">Moving forward, all login OTPs will be sent to this email address.</p>
-                        </div>
+        // Send confirmation email asynchronously (non-blocking)
+        sendEmail({
+            to: user.email,
+            subject: 'FinnovaX — 2FA Preference Updated',
+            message: `
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fbfbfb; padding: 40px 20px; color: #18181b;">
+                    <div style="max-width: 500px; margin: 0 auto; background: #fff; padding: 40px; border: 1px solid #e4e4e7; border-radius: 12px;">
+                        <h2 style="color: #18181b; font-size: 20px; font-weight: 600; margin-top: 0;">2FA Preference Updated</h2>
+                        <p style="color: #52525b;">Hello ${user.name || 'Valued Investor'},</p>
+                        <p style="color: #52525b;">Your Two-Factor Authentication has been updated to <strong>Email OTP</strong>. All future login OTPs will be sent to this email address.</p>
                     </div>
-                `
-            });
-        } catch (emailError) {
-            console.error('Failed to send 2FA preference update email:', emailError);
-        }
+                </div>
+            `
+        }).catch(err => console.error('[2FA] Confirmation email failed:', err));
 
         const userService = require('../../services/auth/user.service');
-
         return res.status(200).json({
             success: true,
-            message: 'Email 2FA authenticated successfully.',
+            message: 'Email 2FA enabled successfully.',
             user: userService.getPublicProfile(user)
         });
     } catch (error) {
-        console.error('Error verifying email 2FA:', error);
-        res.status(500).json({ success: false, message: 'Server error verifying email 2FA' });
+        console.error('[2FA] Error verifying email OTP:', error);
+        return res.status(500).json({ success: false, message: 'Server error verifying email 2FA' });
     }
 };
