@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/common/Sidebar';
 import MyTickets from '../components/investor/MyTickets';
 import CreateTicketFlow from '../components/investor/CreateTicketFlow';
@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import ThemeToggle from '../components/common/ThemeToggle';
 import DotBackgroundDemo from "@/components/ui/DotBackgroundDemo";
+import { toast } from "sonner";
 
 const InvestorDashboard = () => {
     const { user } = useAuth();
@@ -18,6 +19,14 @@ const InvestorDashboard = () => {
     const [selectedTicketId, setSelectedTicketId] = useState(null);
 
     const isProfileIncomplete = user?.role === 'INVESTOR' && !user?.profileCompleted;
+
+    useEffect(() => {
+        if (isProfileIncomplete) {
+            toast.error("Please complete your profile to proceed further.", {
+                duration: 5000,
+            });
+        }
+    }, [isProfileIncomplete]);
 
     const handleTabChange = (tab) => {
         if (isProfileIncomplete && tab !== 'profile' && tab !== 'documents') {
@@ -30,9 +39,9 @@ const InvestorDashboard = () => {
     const renderContent = () => {
         if (selectedTicketId) {
             return (
-                <TicketDetail 
-                    ticketId={selectedTicketId} 
-                    onBack={() => setSelectedTicketId(null)} 
+                <TicketDetail
+                    ticketId={selectedTicketId}
+                    onBack={() => setSelectedTicketId(null)}
                 />
             );
         }
@@ -68,10 +77,10 @@ const InvestorDashboard = () => {
     return (
         <SidebarProvider>
             <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
-            
-            <SidebarInset className="bg-zinc-50 dark:bg-black min-h-screen flex flex-col transition-colors duration-500 relative overflow-hidden">
+
+            <SidebarInset className="bg-[#faf9f6] dark:bg-zinc-950 min-h-screen flex flex-col transition-colors duration-500 relative overflow-hidden">
                 <DotBackgroundDemo />
-                <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#131313] px-4 transition-colors duration-500 relative z-10">
+                <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-md px-4 transition-colors duration-500 relative z-10">
                     <div className="flex items-center gap-2">
                         <SidebarTrigger className="-ml-1 text-zinc-900 dark:text-zinc-100" />
                         <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-2" />

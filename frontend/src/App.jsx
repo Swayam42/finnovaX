@@ -1,9 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth, getRoleDefaultRoute } from './context/AuthContext';
+import { Toaster } from "@/components/ui/sonner";
 
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import ChatbotWidget from './components/common/ChatbotWidget';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
@@ -14,7 +17,6 @@ import L1MakerDesk from './pages/L1MakerDesk';
 import L2CheckerDesk from './pages/L2CheckerDesk';
 import AdminDashboard from './pages/AdminDashboard';
 import ProfilePage from './pages/ProfilePage';
-import ThreeDMarqueeDemo from './components/ThreeDMarqueeDemo';
 
 const AppRoutes = () => {
     const { user, isAuthenticated, isLoading } = useAuth();
@@ -22,49 +24,35 @@ const AppRoutes = () => {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white font-sans">
-                <div className="relative flex items-center justify-center mb-8">
-                    {/* Outer glowing ring */}
-                    <div className="absolute w-24 h-24 border-4 border-white/10 rounded-full animate-[spin_3s_linear_infinite]" />
-                    {/* Inner spinning ring */}
-                    <div className="absolute w-16 h-16 border-4 border-t-white border-r-transparent border-b-transparent border-l-transparent rounded-full animate-[spin_1s_cubic-bezier(0.5,0,0.5,1)_infinite]" />
-                    {/* Center Dot */}
-                    <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+            <div className="flex min-h-screen items-center justify-center bg-black text-white font-sans">
+                <div className="text-center">
+                    <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+                    <h2 className="text-xl font-medium tracking-tight mb-2">FinnovaX</h2>
+                    <p className="text-sm text-zinc-500 max-w-xs text-center animate-pulse">
+                        Restoring your secure session...
+                    </p>
                 </div>
-                
-                <h2 className="text-xl font-medium tracking-tight mb-2">FinnovaX</h2>
-                <p className="text-sm text-zinc-500 max-w-xs text-center animate-pulse">
-                    Establishing secure connection...<br/>
-                    <span className="text-xs mt-2 block opacity-70">(Booting up servers, this may take up to 50 seconds on first load)</span>
-                </p>
             </div>
         );
     }
 
     return (
         <div>
-            {isAuthenticated && !location.pathname.startsWith('/investor') && (
-                <>
-                    <Navbar />
-                </>
-            )}
+            {isAuthenticated && !location.pathname.startsWith('/investor') && <Navbar />}
 
             <main>
                 <Routes>
-                    {/* ── Public Routes ── */}
-                    <Route 
-                        path="/" 
+                    <Route
+                        path="/"
                         element={
-                            isAuthenticated 
-                                ? <Navigate to={getRoleDefaultRoute(user?.role)} replace /> 
+                            isAuthenticated
+                                ? <Navigate to={getRoleDefaultRoute(user?.role)} replace />
                                 : <LandingPage />
-                        } 
+                        }
                     />
-
                     <Route
                         path="/login"
                         element={
-                            // If already logged in, redirect away from login page
                             isAuthenticated
                                 ? <Navigate to={getRoleDefaultRoute(user?.role)} replace />
                                 : <LoginPage />
@@ -88,8 +76,6 @@ const AppRoutes = () => {
                                 : <ForgotPasswordPage />
                         }
                     />
-
-                    {/* ── Protected: Investor ── */}
                     <Route
                         path="/investor"
                         element={
@@ -98,8 +84,6 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                         }
                     />
-
-                    {/* ── Protected: L1 Maker Desk ── */}
                     <Route
                         path="/l1-maker"
                         element={
@@ -108,8 +92,6 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                         }
                     />
-
-                    {/* ── Protected: L2 Checker Desk ── */}
                     <Route
                         path="/l2-checker"
                         element={
@@ -118,8 +100,6 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                         }
                     />
-
-                    {/* ── Protected: Super Admin Center ── */}
                     <Route
                         path="/admin"
                         element={
@@ -128,8 +108,6 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                         }
                     />
-
-                    {/* ── Protected: Profile Page ── */}
                     <Route
                         path="/profile"
                         element={
@@ -138,8 +116,6 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                         }
                     />
-
-                    {/* ── Fallback: redirect to role home or login ── */}
                     <Route
                         path="*"
                         element={
@@ -150,12 +126,11 @@ const AppRoutes = () => {
                     />
                 </Routes>
             </main>
+
+            <ChatbotWidget />
         </div>
     );
 };
-
-import { ThemeProvider } from './context/ThemeContext';
-import { Toaster } from "@/components/ui/sonner";
 
 function App() {
     return (
