@@ -34,11 +34,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize());
 
-// Global Rate Limiting
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5000, // Limit each IP to 5000 requests per `window`
     message: { message: 'Too many requests from this IP, please try again after 15 minutes' },
+    validate: { xForwardedForHeader: false }, // Disable strict proxy validation for Render
     standardHeaders: true,
     legacyHeaders: false,
 });
