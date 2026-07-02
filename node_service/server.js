@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 const { startAutoCloseJob } = require('./services/autoCloseService');
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Render load balancer)
 const PORT = process.env.PORT || 5000;
 
 // Security and utility middleware
