@@ -15,13 +15,13 @@ def query_gemini(prompt: str) -> str:
     
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-1.5-flash',
             contents=prompt
         )
         return response.text
     except Exception as e:
         print(f"Gemini API Error: {e}")
-        return "Both Ollama and Gemini AI models failed to respond."
+        return f"Both Ollama and Gemini AI models failed to respond. Gemini Error: {e}"
 
 async def query_llm(full_prompt: str) -> str:
     llm_response = ""
