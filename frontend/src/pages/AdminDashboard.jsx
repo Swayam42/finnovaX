@@ -458,11 +458,11 @@ const AdminDashboard = () => {
                 const res = await apiClient.get(`/admin/tickets?page=${page}&limit=15&status=${ticketStatus}&priority=${ticketPriority}&dateRange=${dateRange}`);
                 const sortedTix = res.data.tickets.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
                 setTicketsList(sortedTix);
-                setTotalPages(res.data.pagination.totalPages);
+                setTotalPages(res.data.pagination?.totalPages || 1);
             } else if (activeTab === 'users') {
                 const res = await apiClient.get(`/admin/users?page=${page}&limit=15&role=${userRole}`);
                 setUsersList(res.data.users);
-                setTotalPages(res.data.pagination.totalPages);
+                setTotalPages(res.data.pagination?.totalPages || 1);
             } else if (activeTab === 'flagged') {
                 const res = await apiClient.get('/admin/tickets/flagged');
                 setFlaggedList(res.data.tickets);
@@ -473,7 +473,7 @@ const AdminDashboard = () => {
                     agentsList.length === 0 ? apiClient.get('/admin/agents') : Promise.resolve(null)
                 ]);
                 setActivitiesList(actRes.data.activities);
-                setTotalPages(actRes.data.pagination.totalPages);
+                setTotalPages(actRes.data.pagination?.totalPages || 1);
                 if (agentsRes) setAgentsList(agentsRes.data.agents);
             }
         } catch (error) {
@@ -497,7 +497,7 @@ const AdminDashboard = () => {
     // Download agent CSV via server endpoint
     const handleExportAgentCsv = (agentId) => {
         const params = agentId && agentId !== 'ALL' ? `?agentId=${agentId}` : '?agentId=ALL';
-        const base = import.meta.env.VITE_API_URL || '/api';
+        const base = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://finnovax.onrender.com/api' : 'http://localhost:5000/api');
         window.open(`${base}/admin/agents/activities/export${params}`, '_blank');
     };
 

@@ -64,7 +64,7 @@ mongoose.connect(MONGODB_URI)
             }
             
             // 1. Seed dummy user so Investor has a mock Email & SMS
-            require('./seed_user'); 
+            if (process.env.SEED_DEMO_USERS === 'true') require('./seed_user'); 
             
             // 2. Initialize AWS LocalStack (S3 Bucket, SES Verification)
             require('./test_localstack');

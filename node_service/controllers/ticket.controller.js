@@ -253,14 +253,14 @@ exports.addComment = async (req, res) => {
 
         // Use workflow service to notify user if admin commented
         if (req.user.role.startsWith('ADMIN') && ticket.investorId.toString() !== req.user.id.toString()) {
-            await notificationService.createNotification({
+            notificationService.createNotification({
                 userId: ticket.investorId,
                 ticketId: ticket._id,
                 type: 'TICKET_UPDATED',
                 title: 'New Comment on Ticket',
                 message: `An admin has commented on your ticket: ${ticket.title}`,
                 channels: { inApp: true, email: true }
-            });
+            }).catch(e => console.error('[Comment] notif failed:', e.message));
         }
 
         return res.status(200).json({ message: "Comment added", comments: ticket.comments });

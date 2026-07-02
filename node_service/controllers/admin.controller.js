@@ -138,6 +138,9 @@ exports.getSystemMetrics = async (req, res) => {
         const openTickets     = await Ticket.countDocuments({ status: 'OPEN' });
         const resolvedTickets = await Ticket.countDocuments({ status: 'RESOLVED' });
         const rejectedTickets = await Ticket.countDocuments({ status: 'REJECTED' });
+        const inProgressTickets = await Ticket.countDocuments({ status: 'IN_PROGRESS' });
+        const criticalTickets   = await Ticket.countDocuments({ assignedPriority: 'CRITICAL' });
+        const fraudTickets      = await Ticket.countDocuments({ isPotentialFraud: true });
 
         const rejectionRate  = totalTickets > 0 ? (rejectedTickets / totalTickets) * 100 : 0;
         const resolutionRate = totalTickets > 0 ? (resolvedTickets / totalTickets) * 100 : 0;
@@ -190,6 +193,9 @@ exports.getSystemMetrics = async (req, res) => {
             rejectionRate,
             resolutionRate,
             openTickets,
+            inProgressTickets,
+            criticalTickets,
+            fraudTickets,
             slaBreachedTickets,
             serviceTypeData,
             statusData,

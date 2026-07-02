@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import apiClient from '../../api/client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,9 +20,8 @@ const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
   phoneNumber: z.string()
-    .min(10, 'Phone number must be exactly 10 digits')
-    .max(10, 'Phone number must be exactly 10 digits')
-    .refine(val => /^\d{10}$/.test(val), {
+    .transform(val => val.replace(/\D/g, ''))
+    .refine(val => val.length === 10, {
       message: 'Phone number must be exactly 10 digits'
     }),
   password: z.string()
@@ -73,24 +73,20 @@ const RegisterPage = () => {
   const onSubmit = async (values) => {
     setIsLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
       const finalValues = { ...values };
       if (finalValues.phoneNumber) {
         finalValues.phoneNumber = `+91${finalValues.phoneNumber}`;
       }
-
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(finalValues),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Registration failed');
+      const response = await apiClient.post('/auth/register', finalValues);
+      const data = response.data;
+      if (data.accessToken) {
+          localStorage.setItem('kfintech_access_token', data.accessToken);
+      }
       navigate('/login', { state: { message: 'Registration successful! Please login.' } });
     } catch (err) {
-      form.setError('root', { message: err.message });
-      toast.error(err.message);
+      const msg = err.response?.data?.message || err.message || 'Registration failed';
+      form.setError('root', { message: msg });
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

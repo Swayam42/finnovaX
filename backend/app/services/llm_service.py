@@ -15,7 +15,7 @@ def query_gemini(prompt: str) -> str:
     
     try:
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-2.0-flash',
             contents=prompt
         )
         return response.text
@@ -26,7 +26,8 @@ def query_gemini(prompt: str) -> str:
 async def query_llm(full_prompt: str) -> str:
     llm_response = ""
     try:
-        async with httpx.AsyncClient(timeout=10.0) as http_client:
+        # Fail fast in 1.5 seconds if Ollama is not running locally (e.g. in Hugging Face production)
+        async with httpx.AsyncClient(timeout=1.5) as http_client:
             response = await http_client.post(OLLAMA_URL, json={
                 "model": OLLAMA_MODEL,
                 "prompt": full_prompt,

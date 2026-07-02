@@ -7,6 +7,9 @@ const Ticket = require('../models/Ticket');
 exports.getInvestorTickets = async (req, res) => {
     try {
         const { id } = req.params;
+        if (req.user && req.user.role === 'INVESTOR' && req.user.id !== id) {
+            return res.status(403).json({ message: 'Forbidden. You can only view your own tickets.' });
+        }
         // Sort by newest first
         const tickets = await Ticket.find({ investorId: id })
             .sort({ createdAt: -1 })

@@ -179,7 +179,7 @@ exports.finalizeTicket = async (req, res) => {
                 if (action === 'APPROVE') {
                     notifType = 'TICKET_RESOLVED';
                     notifTitle = 'Your Request Has Been Resolved';
-                    notifMessage = `Your ticket "${ticket.title}" has been reviewed and approved by our ${performedByRole || 'L2 Checker'}.`;
+                    notifMessage = `Your ticket "${ticket.title}" has been reviewed and approved by our L2 Checker.`;
                 } else if (action === 'REJECT') {
                     notifType = 'TICKET_REJECTED';
                     notifTitle = 'Action Required: Request Rejected';

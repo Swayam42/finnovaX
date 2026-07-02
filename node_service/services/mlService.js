@@ -22,7 +22,8 @@ const verifyAccount = async (fileBuffer, originalname, mimetype, accountNumber) 
 
     try {
         const response = await axios.post(`${getMlUrl()}/ocr/verify-account`, formData, {
-            headers: formData.getHeaders()
+            headers: formData.getHeaders(),
+            timeout: 15000
         });
         return response.data;
     } catch (error) {
@@ -49,7 +50,8 @@ const verifyKyc = async (files, targetName, targetDob) => {
     try {
         const url = `${getMlUrl()}/ocr/verify-kyc`;
         const response = await axios.post(url, formData, {
-            headers: formData.getHeaders()
+            headers: formData.getHeaders(),
+            timeout: 15000
         });
         return response.data;
     } catch (error) {
@@ -67,7 +69,7 @@ const summarizeTicket = async (ticketData) => {
     try {
         const response = await axios.post(`${getMlUrl()}/summarize/ticket`, {
             ticket_data: ticketData
-        });
+        }, { timeout: 15000 });
         return response.data;
     } catch (error) {
         console.error("ML Service Unreachable (summarizeTicket), using Mock Fallback.");
@@ -82,11 +84,11 @@ const summarizeTicket = async (ticketData) => {
  */
 const analyzeSentiment = async (text) => {
     try {
-        const response = await axios.post(`${getMlUrl()}/sentiment/analyze`, { text });
+        const response = await axios.post(`${getMlUrl()}/sentiment/analyze`, { text }, { timeout: 15000 });
         return response.data;
     } catch (error) {
         console.error("ML Service Unreachable (analyzeSentiment), using Mock Fallback.");
-        return { sentiment: 'Neutral', score: 0.5, priority: 'MEDIUM', fraud_alert: false, intent: 'GENERAL_QUERY' };
+        return { sentiment: 'Neutral', score: 0.5, priority: 'HIGH', fraud_alert: false, intent: 'GENERAL_QUERY' };
     }
 };
 

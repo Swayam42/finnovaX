@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -72,19 +73,7 @@ const L2CheckerDesk = () => {
 
     useEffect(() => { fetchQueue(); }, [fetchQueue]);
     // Load sentiment if already analyzed on ticket creation or by L1
-    useEffect(() => { 
-        if (selectedTicket && selectedTicket.aiSentimentScore) {
-             setTicketSentiment({
-                 sentiment: selectedTicket.assignedPriority === 'CRITICAL' || selectedTicket.assignedPriority === 'HIGH' ? 'NEGATIVE' : 'NEUTRAL',
-                 score: selectedTicket.aiSentimentScore,
-                 fraud_alert: selectedTicket.isPotentialFraud,
-                 priority: selectedTicket.assignedPriority,
-                 intent: selectedTicket.isPotentialFraud ? 'FRAUD_REPORT' : 'COMPLAINT'
-             });
-        } else {
-             setTicketSentiment(null);
-        }
-    }, [selectedTicket?._id, selectedTicket?.aiSentimentScore]);
+    useEffect(() => { setTicketSentiment(null); }, [selectedTicket?._id]);
 
     const handleRunSentiment = async () => {
         if (!selectedTicket) return;
@@ -105,7 +94,7 @@ const L2CheckerDesk = () => {
     const handleAction = async (action) => {
         if (!selectedTicket) return;
         if ((action === 'RETURN_TO_L1' || action === 'REJECT') && !notes.trim()) {
-            alert(`Provide checker comments before ${action === 'REJECT' ? 'rejecting' : 'returning to L1'}.`);
+            toast.error(`Provide checker comments before ${action === 'REJECT' ? 'rejecting' : 'returning to L1'}.`);
             return;
         }
         if (action === 'REJECT' && !window.confirm('Reject this ticket? This cannot be undone.')) return;
@@ -116,7 +105,7 @@ const L2CheckerDesk = () => {
             setSelectedTicket(null);
             setNotes('');
         } catch (err) {
-            alert(`Failed to ${action}. ${err.response?.data?.message || err.message}`);
+            toast.error(`Failed to ${action}. ${err.response?.data?.message || err.message}`);
         } finally {
             setIsActionLoading(null);
         }

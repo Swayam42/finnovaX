@@ -23,8 +23,8 @@ def seed_faqs():
     
     existing_count = collection.count()
     if existing_count > 0:
-        print(f"Found {existing_count} existing documents. Clearing...")
-        collection.delete(ids=[faq["id"] for faq in faqs] + [f"doc_{i}" for i in range(100)])
+        print(f"Found {existing_count} existing documents. Skipping seed.")
+        return
         
     documents = []
     metadatas = []

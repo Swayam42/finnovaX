@@ -26,8 +26,7 @@ exports.register = async (req, res) => {
         });
 
         // Send Welcome Email
-        try {
-            await sesService.sendEmail({
+            sesService.sendEmail({
                 to: newUser.email,
                 subject: 'Welcome to FinnovaX Portal!',
                 message: `
@@ -48,21 +47,14 @@ exports.register = async (req, res) => {
                         </div>
                     </div>
                 `
-            });
-        } catch (err) {
-            console.error('Failed to send welcome email:', err);
-        }
+            }).catch(err => console.error('Failed to send welcome email:', err));
 
         // Send Welcome SMS if phone number exists
         if (newUser.phoneNumber) {
-            try {
-                await snsService.sendSMS({
-                    phoneNumber: newUser.phoneNumber,
-                    message: `Welcome to FinnovaX, ${newUser.name}! Your account has been successfully created.`
-                });
-            } catch (err) {
-                console.error('Failed to send welcome SMS:', err);
-            }
+            snsService.sendSMS({
+                phoneNumber: newUser.phoneNumber,
+                message: `Welcome to FinnovaX, ${newUser.name}! Your account has been successfully created.`
+            }).catch(err => console.error('Failed to send welcome SMS:', err));
         }
 
         const accessToken = tokenService.generateAccessToken(newUser);

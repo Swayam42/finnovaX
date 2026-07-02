@@ -73,6 +73,6 @@ def analyze_complaint_text(text: str):
     elif is_severe or (sentiment == "NEGATIVE" and score > 0.95):
         priority = "HIGH"
     elif sentiment == "NEGATIVE":
-        priority = "MEDIUM"
+        priority = "HIGH"
     
     return sentiment, round(score, 4), priority, fraud_alert, intent

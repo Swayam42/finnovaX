@@ -16,6 +16,7 @@ export const useSession = () => {
             } catch (err) {
                 // Token expired or invalid
                 localStorage.removeItem('kfintech_user');
+                localStorage.removeItem('kfintech_access_token');
                 setUser(null);
                 setError(err);
             } finally {
@@ -28,6 +29,7 @@ export const useSession = () => {
 
     const clearSession = useCallback(() => {
         localStorage.removeItem('kfintech_user');
+        localStorage.removeItem('kfintech_access_token');
         setUser(null);
     }, []);
 

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -98,7 +99,7 @@ const L1MakerDesk = () => {
                 documents: prev.documents.map(d => d._id === docId ? res.data.document : d)
             }));
         } catch (error) {
-            alert(`OCR failed: ${error.response?.data?.message || error.message}`);
+            toast.error(`OCR failed: ${error.response?.data?.message || error.message}`);
         } finally {
             setRunningOcr(null);
         }
@@ -113,7 +114,7 @@ const L1MakerDesk = () => {
                 documents: prev.documents.map(d => d._id === docId ? res.data.document : d)
             }));
         } catch (error) {
-            alert(`Verification failed: ${error.response?.data?.message || error.message}`);
+            toast.error(`Verification failed: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -126,7 +127,7 @@ const L1MakerDesk = () => {
             setSelectedTicket(null);
             setNotes('');
         } catch (error) {
-            alert(`Escalation failed: ${error.response?.data?.message || error.message}`);
+            toast.error(`Escalation failed: ${error.response?.data?.message || error.message}`);
         } finally {
             setIsActionLoading(p => ({ ...p, escalate: false }));
         }
@@ -134,7 +135,7 @@ const L1MakerDesk = () => {
 
     const handleReject = async () => {
         if (!selectedTicket) return;
-        if (!notes) { alert('Provide a reason before rejecting.'); return; }
+        if (!notes) { toast.error('Provide a reason before rejecting.'); return; }
         if (!window.confirm('Reject this ticket? This cannot be undone.')) return;
         setIsActionLoading(p => ({ ...p, reject: true }));
         try {
@@ -143,7 +144,7 @@ const L1MakerDesk = () => {
             setSelectedTicket(null);
             setNotes('');
         } catch (error) {
-            alert(`Reject failed: ${error.response?.data?.message || error.message}`);
+            toast.error(`Reject failed: ${error.response?.data?.message || error.message}`);
         } finally {
             setIsActionLoading(p => ({ ...p, reject: false }));
         }
@@ -156,7 +157,7 @@ const L1MakerDesk = () => {
             const res = await apiClient.post(`/l1/tickets/${selectedTicket._id}/summarize`);
             setSelectedTicket(prev => ({ ...prev, aiSummary: res.data.summary }));
         } catch (error) {
-            alert('Failed to generate AI Summary');
+            toast.error('Failed to generate AI Summary');
         } finally {
             setLoadingSummary(false);
         }
@@ -172,7 +173,7 @@ const L1MakerDesk = () => {
             });
             setTicketSentiment(res.data.sentiment);
         } catch (error) {
-            alert(error.response?.data?.message || 'Sentiment analysis failed.');
+            toast.error(error.response?.data?.message || 'Sentiment analysis failed.');
         } finally {
             setLoadingSentiment(false);
         }
@@ -185,7 +186,7 @@ const L1MakerDesk = () => {
             setSelectedTicket(prev => ({ ...prev, assignedPriority: priority }));
             setQueue(q => q.map(t => t._id === selectedTicket._id ? { ...t, assignedPriority: priority } : t));
         } catch (error) {
-            alert(`Priority update failed: ${error.response?.data?.message || error.message}`);
+            toast.error(`Priority update failed: ${error.response?.data?.message || error.message}`);
         }
     };
 
