@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import apiClient from '../api/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, XCircle, CheckCircle2, Cpu, AlertTriangle, ChevronLeft, ChevronRight, FileText, RefreshCcw, Search, Clock, ShieldAlert, Check, Copy } from 'lucide-react';
+import { ShieldCheck, XCircle, CheckCircle2, Cpu, AlertTriangle, ChevronLeft, ChevronRight, FileText, RefreshCcw, RefreshCw, Search, Clock, ShieldAlert, Check, Copy, BarChart2 } from 'lucide-react';
 import { getServiceType } from '../config/serviceTypes';
 import { format } from 'date-fns';
 
@@ -15,11 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const PriorityBadge = ({ priority }) => {
-    let cls = 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700';
-    if (priority === 'CRITICAL') cls = 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/50';
-    else if (priority === 'HIGH') cls = 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50';
-    else if (priority === 'NORMAL') cls = 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900/50';
-    return <Badge variant="outline" className={`${cls} text-[10px] h-4 px-1.5 font-semibold`}>{priority || 'NORMAL'}</Badge>;
+    return <Badge variant="outline" className="bg-zinc-50 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 text-[10px] h-4 px-1.5 font-semibold uppercase">{priority || 'NORMAL'}</Badge>;
 };
 
 const stripPrefix = (text) => (text || '').replace(/^\[[A-Z_]+\]\s*/, '');
@@ -27,12 +23,12 @@ const stripPrefix = (text) => (text || '').replace(/^\[[A-Z_]+\]\s*/, '');
 const calcSLA = (dateString, priority, status) => {
     if (!dateString) return <span className="text-zinc-400 dark:text-zinc-500">N/A</span>;
     if (['CLOSED', 'RESOLVED', 'REJECTED'].includes(status)) {
-        return <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1"><Check className="w-3 h-3" /> Met</span>;
+        return <span className="text-zinc-600 dark:text-zinc-400 font-medium flex items-center gap-1"><Check className="w-3 h-3" /> Met</span>;
     }
     const slaHours = priority === 'CRITICAL' ? 2 : priority === 'HIGH' ? 4 : 24;
     const diffMins = Math.floor((new Date(dateString).getTime() + slaHours * 3600000 - Date.now()) / 60000);
-    if (diffMins < 0) return <span className="text-red-500 dark:text-red-400 font-medium flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Breached</span>;
-    if (diffMins < 60) return <span className="text-amber-600 dark:text-amber-400">{diffMins}m left</span>;
+    if (diffMins < 0) return <span className="text-zinc-600 dark:text-zinc-300 font-medium flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Breached</span>;
+    if (diffMins < 60) return <span className="text-zinc-600 dark:text-zinc-300">{diffMins}m left</span>;
     return <span className="text-zinc-500 dark:text-zinc-400">{Math.floor(diffMins / 60)}h {diffMins % 60}m</span>;
 };
 
@@ -54,6 +50,9 @@ const L2CheckerDesk = () => {
     const [copiedId, setCopiedId] = useState(false);
     const [isActionLoading, setIsActionLoading] = useState(null);
 
+    const [ticketSentiment, setTicketSentiment] = useState(null);
+    const [loadingSentiment, setLoadingSentiment] = useState(false);
+
     const fetchQueue = useCallback(async (manual = false) => {
         if (manual) setIsRefreshing(true); else setLoading(true);
         setFetchError(null);
@@ -72,6 +71,24 @@ const L2CheckerDesk = () => {
     }, [filterServiceType, filterPriority, filterSearch, page]);
 
     useEffect(() => { fetchQueue(); }, [fetchQueue]);
+    // Reset sentiment when ticket changes
+    useEffect(() => { setTicketSentiment(null); }, [selectedTicket?._id]);
+
+    const handleRunSentiment = async () => {
+        if (!selectedTicket) return;
+        setLoadingSentiment(true);
+        try {
+            const res = await apiClient.post('/tickets/sentiment', {
+                title: selectedTicket.title || '',
+                description: selectedTicket.description || ''
+            });
+            setTicketSentiment(res.data.sentiment);
+        } catch (error) {
+            // fail silently in L2
+        } finally {
+            setLoadingSentiment(false);
+        }
+    };
 
     const handleAction = async (action) => {
         if (!selectedTicket) return;
@@ -113,7 +130,7 @@ const L2CheckerDesk = () => {
                 {/* Header */}
                 <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <ShieldCheck className="h-4 w-4 text-amber-500" />
+                        <ShieldCheck className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
                         <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">L2 Verification</span>
                         {queue.length > 0 && (
                             <span className="text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-full px-1.5 py-0.5">{queue.length}</span>
@@ -152,9 +169,9 @@ const L2CheckerDesk = () => {
                             </SelectTrigger>
                             <SelectContent className="bg-white dark:bg-[#1A1A1A] border-zinc-200 dark:border-zinc-800">
                                 <SelectItem value="ALL" className="text-xs">All</SelectItem>
-                                <SelectItem value="CRITICAL" className="text-xs text-red-600 dark:text-red-400">Critical</SelectItem>
-                                <SelectItem value="HIGH" className="text-xs text-amber-600 dark:text-amber-400">High</SelectItem>
-                                <SelectItem value="NORMAL" className="text-xs text-blue-600 dark:text-blue-400">Normal</SelectItem>
+                                <SelectItem value="CRITICAL" className="text-xs">Critical</SelectItem>
+                                <SelectItem value="HIGH" className="text-xs">High</SelectItem>
+                                <SelectItem value="NORMAL" className="text-xs">Normal</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -203,7 +220,7 @@ const L2CheckerDesk = () => {
                                         }`}
                                     >
                                         {selectedTicket?._id === ticket._id && (
-                                            <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-amber-500 dark:bg-zinc-400 rounded-r" />
+                                            <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-zinc-900 dark:bg-zinc-100 rounded-r" />
                                         )}
                                         <div className="flex items-center justify-between mb-1.5">
                                             <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
@@ -301,42 +318,98 @@ const L2CheckerDesk = () => {
                                     </Alert>
                                 )}
 
-                                {/* L1 Maker Notes + Risk Grid */}
-                                <div className="bg-white dark:bg-[#161616] border border-zinc-100 dark:border-zinc-800 rounded-lg overflow-hidden">
-                                    <div className="px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex items-center gap-2">
-                                        <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
-                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Compliance & Risk</span>
-                                    </div>
-                                    <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">L1 Maker Notes</p>
-                                            <p className="text-xs text-zinc-700 dark:text-zinc-300">{selectedTicket.l1Notes || <span className="italic text-zinc-400">No notes.</span>}</p>
+
+                                {/* L1 Maker Notes + Risk + Sentiment — side by side */}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                                    {/* Compliance & Risk — takes 2/3 */}
+                                    <div className="lg:col-span-2 bg-white dark:bg-[#161616] border border-zinc-100 dark:border-zinc-800 rounded-lg overflow-hidden">
+                                        <div className="px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex items-center gap-2">
+                                            <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
+                                            <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Compliance & Risk</span>
                                         </div>
-                                        <div className="flex flex-col gap-2">
-                                            {selectedTicket.isPotentialFraud ? (
-                                                <div className="flex items-center gap-2 text-xs text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/20 p-2 rounded border border-red-100 dark:border-red-900/30">
-                                                    <ShieldAlert className="h-3.5 w-3.5 shrink-0" /> System Flag: Potential Fraud
+                                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">L1 Maker Notes</p>
+                                                <p className="text-xs text-zinc-700 dark:text-zinc-300">{selectedTicket.l1Notes || <span className="italic text-zinc-400">No notes.</span>}</p>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                {selectedTicket.isPotentialFraud ? (
+                                                    <div className="flex items-center gap-2 text-xs text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/20 p-2 rounded border border-red-100 dark:border-red-900/30">
+                                                        <ShieldAlert className="h-3.5 w-3.5 shrink-0" /> System Flag: Potential Fraud
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 p-2 rounded border border-emerald-100 dark:border-emerald-900/30">
+                                                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> No fraud patterns detected
+                                                    </div>
+                                                )}
+                                                {(() => {
+                                                    const ocrFailed = selectedTicket.documents?.some(d => d.ocrExtraction && !d.ocrExtraction.matchVerified);
+                                                    const ocrPassed = selectedTicket.documents?.some(d => d.ocrExtraction?.matchVerified);
+                                                    if (ocrFailed) return (
+                                                        <div className="flex items-center gap-2 text-xs text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/20 p-2 rounded border border-red-100 dark:border-red-900/30">
+                                                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> OCR Verification Failed
+                                                        </div>
+                                                    );
+                                                    if (ocrPassed) return (
+                                                        <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 p-2 rounded border border-emerald-100 dark:border-emerald-900/30">
+                                                            <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> OCR Matches CRM Records
+                                                        </div>
+                                                    );
+                                                    return null;
+                                                })()}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Minimal Sentiment Panel — 1/3 */}
+                                    <div className="bg-white dark:bg-[#161616] border border-zinc-100 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col">
+                                        <div className="px-3 py-2.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex items-center justify-between">
+                                            <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                                                <BarChart2 className="h-3 w-3 text-blue-400" /> Sentiment
+                                            </span>
+                                            <button onClick={handleRunSentiment} disabled={loadingSentiment}
+                                                className="text-[10px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 disabled:opacity-50 transition-colors">
+                                                {loadingSentiment ? <RefreshCw className="h-3 w-3 animate-spin" /> : (ticketSentiment ? '↺' : 'Run')}
+                                            </button>
+                                        </div>
+                                        <div className="flex-1 p-3">
+                                            {loadingSentiment ? (
+                                                <div className="space-y-2">
+                                                    <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-3/4" />
+                                                    <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-1/2" />
+                                                </div>
+                                            ) : ticketSentiment ? (
+                                                <div className="space-y-2.5">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                                            ticketSentiment.sentiment === 'NEGATIVE' ? 'bg-red-500' :
+                                                            ticketSentiment.sentiment === 'POSITIVE' ? 'bg-emerald-500' : 'bg-zinc-400'
+                                                        }`} />
+                                                        <span className={`text-xs font-bold ${
+                                                            ticketSentiment.sentiment === 'NEGATIVE' ? 'text-red-600 dark:text-red-400' :
+                                                            ticketSentiment.sentiment === 'POSITIVE' ? 'text-emerald-600 dark:text-emerald-400' :
+                                                            'text-zinc-600 dark:text-zinc-400'
+                                                        }`}>{ticketSentiment.sentiment}</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between items-center text-[10px]">
+                                                            <span className="text-zinc-400 dark:text-zinc-500">Score</span>
+                                                            <span className="font-semibold text-zinc-700 dark:text-zinc-300">{typeof ticketSentiment.score === 'number' ? ticketSentiment.score.toFixed(2) : '—'}</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center text-[10px]">
+                                                            <span className="text-zinc-400 dark:text-zinc-500">Intent</span>
+                                                            <span className="font-semibold text-zinc-700 dark:text-zinc-300 truncate ml-2 max-w-[80px]">{ticketSentiment.intent || '—'}</span>
+                                                        </div>
+                                                        {ticketSentiment.fraud_alert && (
+                                                            <div className="mt-1.5 text-[10px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-2 py-1 rounded border border-red-100 dark:border-red-900/30">
+                                                                ⚠ Fraud Signal
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 p-2 rounded border border-emerald-100 dark:border-emerald-900/30">
-                                                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> No fraud patterns detected
-                                                </div>
+                                                <p className="text-[11px] text-zinc-400 dark:text-zinc-500 italic">Click Run to analyse.</p>
                                             )}
-                                            {(() => {
-                                                const ocrFailed = selectedTicket.documents?.some(d => d.ocrExtraction && !d.ocrExtraction.matchVerified);
-                                                const ocrPassed = selectedTicket.documents?.some(d => d.ocrExtraction?.matchVerified);
-                                                if (ocrFailed) return (
-                                                    <div className="flex items-center gap-2 text-xs text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/20 p-2 rounded border border-red-100 dark:border-red-900/30">
-                                                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> OCR Verification Failed
-                                                    </div>
-                                                );
-                                                if (ocrPassed) return (
-                                                    <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 p-2 rounded border border-emerald-100 dark:border-emerald-900/30">
-                                                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> OCR Matches CRM Records
-                                                    </div>
-                                                );
-                                                return null;
-                                            })()}
                                         </div>
                                     </div>
                                 </div>

@@ -527,15 +527,26 @@ const L1MakerDesk = () => {
                                                                     {doc.ocrExtraction.extractedText}
                                                                 </pre>
                                                             </>
-                                                        ) : (
-                                                            <div className="flex items-center justify-between">
-                                                                <p className="text-xs text-zinc-400 dark:text-zinc-500">No OCR data yet.</p>
-                                                                <Button variant="outline" size="sm" onClick={() => handleRunOcr(doc._id)} disabled={runningOcr === doc._id}
-                                                                    className="h-7 text-xs bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
-                                                                    {runningOcr === doc._id ? <><RefreshCw className="h-3 w-3 animate-spin mr-1" />Processing…</> : <><Cpu className="h-3 w-3 mr-1" />Run OCR</>}
-                                                                </Button>
-                                                            </div>
-                                                        )}
+                                                        ) : (() => {
+                                                            // Vault/KYC docs are pre-verified — no OCR needed
+                                                            const isVaultDoc = doc.source === 'VAULT' ||
+                                                                ['Aadhaar Card', 'PAN Card', 'Driving License'].includes(doc.name);
+                                                            return isVaultDoc ? (
+                                                                <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                                                                    <Check className="w-3 h-3 shrink-0" />
+                                                                    <span className="font-medium">KYC Verified — OCR not required</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center justify-between">
+                                                                    <p className="text-xs text-zinc-400 dark:text-zinc-500">No OCR data yet.</p>
+                                                                    <Button variant="outline" size="sm" onClick={() => handleRunOcr(doc._id)} disabled={runningOcr === doc._id}
+                                                                        className="h-7 text-xs bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+                                                                        {runningOcr === doc._id ? <><RefreshCw className="h-3 w-3 animate-spin mr-1" />Processing…</> : <><Cpu className="h-3 w-3 mr-1" />Run OCR</>}
+                                                                    </Button>
+                                                                </div>
+                                                            );
+                                                        })()}
+
                                                     </div>
                                                 </div>
                                             ))}

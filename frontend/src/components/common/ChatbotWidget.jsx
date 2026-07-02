@@ -267,7 +267,7 @@ const ChatbotWidget = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -424,11 +424,12 @@ const ChatbotWidget = () => {
                 )}
             </AnimatePresence>
 
+            {/* Toggle Button — always fixed at bottom-right */}
             <motion.button
                 onClick={() => setIsOpen((prev) => !prev)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="group flex h-14 w-14 items-center justify-center rounded-full bg-zinc-900 text-white shadow-[0_8px_30px_rgba(0,0,0,0.2)] ring-1 ring-black/5 transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white relative overflow-hidden"
+                className="group flex h-14 w-14 items-center justify-center rounded-full bg-zinc-900 text-white shadow-[0_8px_30px_rgba(0,0,0,0.2)] ring-1 ring-black/5 transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white relative overflow-hidden shrink-0"
                 aria-label="Toggle chatbot"
             >
                 <AnimatePresence>

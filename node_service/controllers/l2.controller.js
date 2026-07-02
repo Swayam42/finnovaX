@@ -9,12 +9,16 @@ const { escapeRegex } = require('../utils/escapeRegex');
 
 exports.getL2Queue = async (req, res) => {
     try {
-        const { search, page = 1, limit = 20, serviceType } = req.query;
+        const { search, page = 1, limit = 20, serviceType, priority } = req.query;
         
         const query = { status: 'L2_APPROVAL' };
 
         if (serviceType && serviceType !== 'ALL') {
             query.serviceType = serviceType;
+        }
+
+        if (priority && priority !== 'ALL') {
+            query.assignedPriority = priority;
         }
 
         if (search) {
