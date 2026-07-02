@@ -47,8 +47,12 @@ exports.uploadDocuments = async (files) => {
                 }
             }
             
-            // If Cloudinary wasn't configured, or if it failed, use LocalStack S3
+            // If Cloudinary wasn't configured, or if it failed, use S3 ONLY if explicitly enabled
             if (!documentUrl) {
+                if (process.env.NODE_ENV === 'production' && !process.env.AWS_ACCESS_KEY_ID) {
+                    throw new Error("Cloudinary URL is missing or upload failed, and no AWS S3 credentials provided for fallback.");
+                }
+
                 await uploadToS3({
                     Key: fileName,
                     Body: file.buffer,

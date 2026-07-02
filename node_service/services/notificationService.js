@@ -61,15 +61,17 @@ const createNotification = async ({
 
             if (channels.email && user?.email) {
                 const emailHtml = buildEmailHtml({ type, title, message, meta, userName: user.name });
-                await sendEmail({
+                // Fire and forget to prevent SMTP timeouts from crashing the API
+                sendEmail({
                     to: user.email,
                     subject: buildEmailSubject({ type, meta }),
                     message: emailHtml
-                });
+                }).catch(e => console.error('[Notifications] Email failed:', e.message));
             }
 
             if (channels.sms && user?.phoneNumber) {
-                await sendSMS({ phoneNumber: user.phoneNumber, message });
+                sendSMS({ phoneNumber: user.phoneNumber, message })
+                    .catch(e => console.error('[Notifications] SMS failed:', e.message));
             }
         } catch (err) {
             console.error('[Notifications] Delivery failed (non-critical):', err.message);
