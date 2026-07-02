@@ -29,4 +29,7 @@ router.post('/:id/resubmit', authenticate, upload.array('documents', 5), ticketC
 // POST /api/tickets/:id/documents/:docId/ocr
 router.post('/:id/documents/:docId/ocr', authenticate, authorize('ADMIN_L1', 'ADMIN_SUPER'), ticketController.runOcr);
 
+// PUT /api/tickets/:id/documents/:docId/verify
+router.put('/:id/documents/:docId/verify', authenticate, authorize('ADMIN_L1', 'ADMIN_SUPER'), ticketController.verifyDocument);
+
 module.exports = router;

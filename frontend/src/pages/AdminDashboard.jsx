@@ -125,7 +125,13 @@ const OverviewTab = ({ metrics, recentTickets, recentActivities }) => {
                                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#71717a' }} />
                                 <YAxis tick={{ fontSize: 10, fill: '#71717a' }} />
                                 <Tooltip
-                                    contentStyle={{ background: 'var(--tooltip-bg, #fff)', border: '1px solid #e4e4e7', borderRadius: '8px', fontSize: '12px' }}
+                                    cursor={{ fill: 'transparent' }}
+                                    content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                            return <div className="font-bold text-zinc-900 dark:text-zinc-50 text-sm drop-shadow-md">{payload[0].value}</div>;
+                                        }
+                                        return null;
+                                    }}
                                 />
                                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                     {statusData.map((entry, index) => (
@@ -445,11 +451,13 @@ const AdminDashboard = () => {
                     apiClient.get(`/admin/agents/activities?page=1&limit=10`)
                 ]);
                 setMetrics(metricsRes.data);
-                setTicketsList(ticketsRes.data.tickets);
+                const sortedTix = ticketsRes.data.tickets.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setTicketsList(sortedTix);
                 setActivitiesList(agentsRes.data.activities);
             } else if (activeTab === 'tickets') {
                 const res = await apiClient.get(`/admin/tickets?page=${page}&limit=15&status=${ticketStatus}&priority=${ticketPriority}&dateRange=${dateRange}`);
-                setTicketsList(res.data.tickets);
+                const sortedTix = res.data.tickets.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setTicketsList(sortedTix);
                 setTotalPages(res.data.pagination.totalPages);
             } else if (activeTab === 'users') {
                 const res = await apiClient.get(`/admin/users?page=${page}&limit=15&role=${userRole}`);
@@ -515,29 +523,21 @@ const AdminDashboard = () => {
         <div className="min-h-screen bg-[#faf9f6] dark:bg-[#0A0A0A] text-zinc-900 dark:text-zinc-50 relative overflow-hidden font-sans">
             <DotBackgroundDemo />
 
-            {/* Top Nav Bar */}
-            <header className="relative z-20 flex items-center justify-between px-6 lg:px-10 h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-[#0A0A0A]/60 backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                    <Shield className="h-5 w-5 text-zinc-900 dark:text-zinc-100" />
-                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Super Admin Console</span>
-                </div>
-                <div className="flex items-center gap-3">
+            {/* Page Title */}
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="mb-6 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">Dashboard</h1>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">Monitor, manage and audit the FinnovaX platform</p>
+                    </div>
                     <button
                         onClick={fetchData}
                         disabled={loading}
-                        className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500"
+                        className="p-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors text-zinc-600 dark:text-zinc-300"
+                        title="Refresh Data"
                     >
                         <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     </button>
-                    <ThemeToggle />
-                </div>
-            </header>
-
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                {/* Page Title */}
-                <div className="mb-6">
-                    <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">Dashboard</h1>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">Monitor, manage and audit the FinnovaX platform</p>
                 </div>
 
                 {/* Tab Navigation */}

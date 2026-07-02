@@ -71,16 +71,28 @@ const L2CheckerDesk = () => {
     }, [filterServiceType, filterPriority, filterSearch, page]);
 
     useEffect(() => { fetchQueue(); }, [fetchQueue]);
-    // Reset sentiment when ticket changes
-    useEffect(() => { setTicketSentiment(null); }, [selectedTicket?._id]);
+    // Load sentiment if already analyzed on ticket creation or by L1
+    useEffect(() => { 
+        if (selectedTicket && selectedTicket.aiSentimentScore) {
+             setTicketSentiment({
+                 sentiment: selectedTicket.assignedPriority === 'CRITICAL' || selectedTicket.assignedPriority === 'HIGH' ? 'NEGATIVE' : 'NEUTRAL',
+                 score: selectedTicket.aiSentimentScore,
+                 fraud_alert: selectedTicket.isPotentialFraud,
+                 priority: selectedTicket.assignedPriority,
+                 intent: selectedTicket.isPotentialFraud ? 'FRAUD_REPORT' : 'COMPLAINT'
+             });
+        } else {
+             setTicketSentiment(null);
+        }
+    }, [selectedTicket?._id, selectedTicket?.aiSentimentScore]);
 
     const handleRunSentiment = async () => {
         if (!selectedTicket) return;
         setLoadingSentiment(true);
         try {
-            const res = await apiClient.post('/tickets/sentiment', {
-                title: selectedTicket.title || '',
-                description: selectedTicket.description || ''
+            const res = await apiClient.post('/tickets/sentiment', { 
+                text: selectedTicket.description,
+                ticketId: selectedTicket._id
             });
             setTicketSentiment(res.data.sentiment);
         } catch (error) {
@@ -455,10 +467,18 @@ const L2CheckerDesk = () => {
                                                     <div className="p-4">
                                                         {doc.ocrExtraction ? (
                                                             <>
-                                                                <p className={`text-[10px] font-semibold flex items-center gap-1 mb-2 ${doc.ocrExtraction.matchVerified ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
-                                                                    {doc.ocrExtraction.matchVerified ? <Check className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                                                                    {doc.ocrExtraction.matchVerified ? 'OCR Match Verified' : 'OCR Verification Failed'}
-                                                                </p>
+                                                                <div className="flex items-center justify-between mb-2">
+                                                                    <p className="text-[10px] font-semibold flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+                                                                        <Cpu className="w-3 h-3" />
+                                                                        OCR Extracted Text
+                                                                    </p>
+                                                                    {doc.status === 'VERIFIED' && (
+                                                                        <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded">
+                                                                            <Check className="w-3 h-3" />
+                                                                            L1 Verified
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                                 <pre className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded p-3 text-[11px] font-mono text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap max-h-36 overflow-y-auto">
                                                                     {doc.ocrExtraction.extractedText || 'No text extracted.'}
                                                                 </pre>

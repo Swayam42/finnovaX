@@ -43,6 +43,11 @@ const SLAProgressBar = ({ currentStatus, timeline = [] }) => {
         }
     }
 
+    // Ensure the current status is always the last active node if it's valid
+    if (currentStatus && BASE_STEPS[currentStatus] && actualPath[actualPath.length - 1] !== currentStatus) {
+        actualPath.push(currentStatus);
+    }
+
     // 2. If it hasn't finished, predict the rest of the happy path for visualization
     let displaySteps = [];
     let isTerminated = false;

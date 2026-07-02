@@ -3,6 +3,8 @@ uvicorn[standard]
 pydantic
 python-multipart
 transformers>=4.40.0
+torch
+torchvision
 
 easyocr
 requests

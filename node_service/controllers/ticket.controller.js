@@ -85,7 +85,7 @@ exports.createTicket = async (req, res) => {
             description: finalDescription,
             documents: uploadedDocuments,
             aiSentimentScore: aiPayload.score || 0,
-            assignedPriority: 'NORMAL', // L1 agent sets priority — AI only scores
+            assignedPriority: aiPayload.priority || 'NORMAL', // Respect AI priority if available
             aiSummary,
             isPotentialFraud: aiPayload.fraud_alert || false,
             serviceType: serviceType || 'COMPLAINT',
@@ -137,7 +137,7 @@ exports.createTicket = async (req, res) => {
 exports.previewSentiment = async (req, res) => {
     try {
         // Accept { text } OR { title, description } from different callers
-        const { title = '', description = '', text: rawText } = req.body;
+        const { title = '', description = '', text: rawText, ticketId } = req.body;
         const text = rawText || `${title} ${description}`.trim();
 
         if (!text) {
@@ -145,6 +145,17 @@ exports.previewSentiment = async (req, res) => {
         }
 
         const sentiment = await mlService.analyzeSentiment(text);
+
+        if (ticketId) {
+            const ticket = await ticketService.getTicketById(ticketId);
+            if (ticket) {
+                ticket.aiSentimentScore = sentiment.score;
+                ticket.assignedPriority = sentiment.priority;
+                ticket.isPotentialFraud = sentiment.fraud_alert;
+                await ticketService.saveTicket(ticket);
+            }
+        }
+
         return res.status(200).json({ message: 'Sentiment analysed successfully.', sentiment });
     } catch (error) {
         console.error('[Ticket] previewSentiment error:', error);
@@ -381,6 +392,34 @@ exports.runOcr = async (req, res) => {
 
     } catch (error) {
         console.error("[Ticket] runOcr error:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.verifyDocument = async (req, res) => {
+    try {
+        const { id, docId } = req.params;
+        
+        const ticket = await ticketService.getTicketById(id);
+        if (!ticket) return res.status(404).json({ message: "Ticket not found." });
+
+        const document = ticket.documents.id(docId);
+        if (!document) return res.status(404).json({ message: "Document not found in ticket." });
+
+        document.status = 'VERIFIED';
+        await ticketService.saveTicket(ticket);
+
+        await auditService.createAuditLog({
+            entityId: ticket._id,
+            entityType: 'Ticket',
+            action: 'DOCUMENT_VERIFIED',
+            performedBy: req.user.id,
+            details: { note: `L1 Admin marked document '${document.name}' as Verified.` }
+        });
+
+        return res.status(200).json({ message: "Document marked as verified.", document });
+    } catch (error) {
+        console.error("[Ticket] verifyDocument error:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };

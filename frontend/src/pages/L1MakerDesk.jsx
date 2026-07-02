@@ -73,7 +73,7 @@ const L1MakerDesk = () => {
 
     useEffect(() => { fetchQueue(); }, [fetchQueue]);
 
-    // Reset sentiment when ticket changes
+    // Reset sentiment when ticket changes so L1 has to run it manually
     useEffect(() => { setTicketSentiment(null); }, [selectedTicket?._id]);
 
     const calculateSLA = (dateString, priority, status) => {
@@ -101,6 +101,19 @@ const L1MakerDesk = () => {
             alert(`OCR failed: ${error.response?.data?.message || error.message}`);
         } finally {
             setRunningOcr(null);
+        }
+    };
+
+    const handleVerifyDocument = async (docId) => {
+        if (!selectedTicket) return;
+        try {
+            const res = await apiClient.put(`/tickets/${selectedTicket._id}/documents/${docId}/verify`);
+            setSelectedTicket(prev => ({
+                ...prev,
+                documents: prev.documents.map(d => d._id === docId ? res.data.document : d)
+            }));
+        } catch (error) {
+            alert(`Verification failed: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -154,8 +167,8 @@ const L1MakerDesk = () => {
         setLoadingSentiment(true);
         try {
             const res = await apiClient.post('/tickets/sentiment', {
-                title: selectedTicket.title || '',
-                description: selectedTicket.description || ''
+                text: selectedTicket.description,
+                ticketId: selectedTicket._id
             });
             setTicketSentiment(res.data.sentiment);
         } catch (error) {
@@ -519,13 +532,25 @@ const L1MakerDesk = () => {
                                                     <div className="p-4">
                                                         {doc.ocrExtraction?.extractedText ? (
                                                             <>
-                                                                <p className={`text-[10px] font-semibold flex items-center gap-1 mb-2 ${doc.ocrExtraction.matchVerified ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
-                                                                    {doc.ocrExtraction.matchVerified ? <Check className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                                                                    {doc.ocrExtraction.matchVerified ? 'OCR Match Verified' : 'OCR Verification Failed'}
+                                                                <p className="text-[10px] font-semibold flex items-center gap-1 mb-2 text-zinc-500 dark:text-zinc-400">
+                                                                    <Cpu className="w-3 h-3" />
+                                                                    OCR Extracted Text
                                                                 </p>
                                                                 <pre className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded p-3 text-[11px] font-mono text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap max-h-36 overflow-y-auto">
                                                                     {doc.ocrExtraction.extractedText}
                                                                 </pre>
+                                                                {doc.status !== 'VERIFIED' ? (
+                                                                    <div className="mt-3 text-right border-t border-zinc-100 dark:border-zinc-800 pt-3">
+                                                                        <Button size="sm" onClick={() => handleVerifyDocument(doc._id)} className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
+                                                                            Mark as Verified
+                                                                        </Button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+                                                                        <Check className="w-3 h-3 shrink-0" />
+                                                                        <span className="font-semibold">Verified by L1</span>
+                                                                    </div>
+                                                                )}
                                                             </>
                                                         ) : (() => {
                                                             // Vault/KYC docs are pre-verified — no OCR needed

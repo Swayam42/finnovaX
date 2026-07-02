@@ -55,19 +55,24 @@ def get_sentiment(text: str):
         
     if negative_count > 0:
         return "NEGATIVE", min(1.0, 0.7 + (negative_count * 0.1)), fraud_alert
-    return "POSITIVE", 0.9, fraud_alert
+    # Change from POSITIVE 0.9 to NEUTRAL 0.5 so we know the model crashed
+    return "NEUTRAL", 0.5, fraud_alert
 
 def analyze_complaint_text(text: str):
     sentiment, score, fraud_alert = get_sentiment(text)
     intent = classify_intent(text)
     
+    severe_keywords = ["lawyer", "sue", "legal", "unacceptable", "fbi", "police", "court", "urgent", "ombudsman", "disgusting", "terrible"]
+    is_severe = any(k in text.lower() for k in severe_keywords)
+    
     # Escalation Logic based on Sentiment & Intent
     priority = "NORMAL"
     
-    # Only escalate based on score if the sentiment is NEGATIVE
-    if fraud_alert or intent == "FRAUD_REPORT" or (sentiment == "NEGATIVE" and score > 0.85):
+    if fraud_alert or intent == "FRAUD_REPORT":
         priority = "CRITICAL"
-    elif sentiment == "NEGATIVE" and score > 0.60:
+    elif is_severe or (sentiment == "NEGATIVE" and score > 0.95):
         priority = "HIGH"
+    elif sentiment == "NEGATIVE":
+        priority = "MEDIUM"
     
     return sentiment, round(score, 4), priority, fraud_alert, intent
