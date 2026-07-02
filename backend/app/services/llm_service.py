@@ -9,19 +9,38 @@ client = None
 if GENI_API_KEY:
     client = genai.Client(api_key=GENI_API_KEY)
 
-def query_gemini(prompt: str) -> str:
+import asyncio
+
+async def query_gemini(prompt: str) -> str:
     if not client:
         return "Gemini API key is missing, and Ollama is unreachable. Cannot process request."
     
-    try:
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=prompt
-        )
-        return response.text
-    except Exception as e:
-        print(f"Gemini API Error: {e}")
-        return f"Both Ollama and Gemini AI models failed to respond. Gemini Error: {e}"
+    max_retries = 3
+    base_delay = 15 # Gemini quota errors usually request ~12-15s wait
+
+    for attempt in range(max_retries):
+        try:
+            if hasattr(client, 'aio'):
+                response = await client.aio.models.generate_content(
+                    model='gemini-2.0-flash',
+                    contents=prompt
+                )
+            else:
+                response = client.models.generate_content(
+                    model='gemini-2.0-flash',
+                    contents=prompt
+                )
+            return response.text
+        except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                if attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    print(f"Gemini Rate Limit Hit (429). Retrying in {delay} seconds...")
+                    await asyncio.sleep(delay)
+                    continue
+            print(f"Gemini API Error: {e}")
+            return f"Both Ollama and Gemini AI models failed to respond. Gemini Error: {e}"
 
 async def query_llm(full_prompt: str) -> str:
     llm_response = ""
@@ -38,7 +57,7 @@ async def query_llm(full_prompt: str) -> str:
             llm_response = data.get("response", "").strip()
     except Exception as e:
         print(f"Ollama local failed ({e}). Falling back to Gemini...")
-        llm_response = query_gemini(full_prompt)
+        llm_response = await query_gemini(full_prompt)
         
     return llm_response
 

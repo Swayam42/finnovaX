@@ -483,13 +483,13 @@ const Profile = () => {
                                         : "We've sent a 6-digit OTP to your email. Please enter it below to confirm."}
                                 </p>
                                 
-                                {isSettingUp2FA ? (
-                                    <div className="w-48 h-48 bg-zinc-100 dark:bg-zinc-800/50 rounded-xl animate-pulse flex items-center justify-center mb-6">
+                                {isSettingUp2FA && modalType === 'GOOGLE' ? (
+                                    <div className="w-48 h-48 bg-zinc-100 dark:bg-zinc-800/50 rounded-xl animate-pulse flex items-center justify-center mb-6 mx-auto">
                                         <span className="text-zinc-400">Generating...</span>
                                     </div>
                                 ) : (
                                     modalType === 'GOOGLE' && (
-                                        <div className="p-3 bg-white rounded-xl shadow-sm border border-zinc-100 mb-6">
+                                        <div className="p-3 bg-white rounded-xl shadow-sm border border-zinc-100 mb-6 mx-auto w-fit">
                                             {qrCodeUrl ? (
                                                 <QRCodeSVG value={qrCodeUrl} size={180} />
                                             ) : (

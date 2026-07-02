@@ -13,7 +13,7 @@ exports.forgotPassword = async (req, res) => {
         
         // Always return success to prevent email enumeration, but only send if exists
         if (user && user.isActive) {
-            await otpService.generateAndSendOTP(user);
+            await otpService.generateAndSendOTP(user, 'FORGOT_PASSWORD');
         }
 
         return res.status(200).json({ message: 'If that email exists, an OTP has been sent.' });

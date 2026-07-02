@@ -103,7 +103,7 @@ exports.generateEmail2FA = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        await otpService.generateAndSendOTP(user);
+        await otpService.generateAndSendOTP(user, 'SETUP_2FA');
 
         return res.status(200).json({
             success: true,
