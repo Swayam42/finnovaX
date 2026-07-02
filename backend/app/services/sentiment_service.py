@@ -1,14 +1,19 @@
+import os
 import torch
 from transformers import pipeline
 
-# Load pipeline globally to avoid reloading on every request
-try:
-    device = 0 if torch.cuda.is_available() else -1
-    # Upgraded to Industry-Standard Financial Model
-    sentiment_analyzer = pipeline("sentiment-analysis", model="ProsusAI/finbert", device=device)
-except Exception as e:
+LOW_MEMORY = os.getenv("RENDER") == "true" or os.getenv("LOW_MEMORY_MODE", "true").lower() == "true"
+
+if LOW_MEMORY:
     sentiment_analyzer = None
-    print(f"Failed to load transformer model: {e}")
+    print("⚠️  Low Memory Mode: Skipping FinBERT initialization.")
+else:
+    try:
+        device = 0 if torch.cuda.is_available() else -1
+        sentiment_analyzer = pipeline("sentiment-analysis", model="ProsusAI/finbert", device=device)
+    except Exception as e:
+        sentiment_analyzer = None
+        print(f"Failed to load transformer model: {e}")
 
 def classify_intent(text: str) -> str:
     text_lower = text.lower()

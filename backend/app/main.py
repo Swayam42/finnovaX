@@ -54,6 +54,11 @@ app.include_router(health.router,     prefix="/health",     tags=["Health"])
 @app.on_event("startup")
 async def startup_event():
     """Auto-seed the ChromaDB knowledge base on every startup if empty."""
+    LOW_MEMORY = os.getenv("RENDER") == "true" or os.getenv("LOW_MEMORY_MODE", "true").lower() == "true"
+    if LOW_MEMORY:
+        print("⚠️  Low Memory Mode: Skipping ChromaDB auto-seeding to conserve RAM.")
+        return
+
     try:
         from app.services.knowledge_base import seed_faqs
         seed_faqs()

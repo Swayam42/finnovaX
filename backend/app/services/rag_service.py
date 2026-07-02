@@ -2,14 +2,20 @@ import os
 import chromadb
 from chromadb.utils import embedding_functions
 
-try:
-    db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
-    chroma_client = chromadb.PersistentClient(path=db_path)
-    emb_fn = embedding_functions.DefaultEmbeddingFunction()
-    collection = chroma_client.get_collection(name="kfintech_faqs", embedding_function=emb_fn)
-except Exception as e:
-    print(f"Warning: Could not connect to ChromaDB or collection not found. Error: {e}")
+LOW_MEMORY = os.getenv("RENDER") == "true" or os.getenv("LOW_MEMORY_MODE", "true").lower() == "true"
+
+if LOW_MEMORY:
     collection = None
+    print("⚠️  Low Memory Mode: Skipping ChromaDB RAG initialization.")
+else:
+    try:
+        db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
+        chroma_client = chromadb.PersistentClient(path=db_path)
+        emb_fn = embedding_functions.DefaultEmbeddingFunction()
+        collection = chroma_client.get_collection(name="kfintech_faqs", embedding_function=emb_fn)
+    except Exception as e:
+        print(f"Warning: Could not connect to ChromaDB or collection not found. Error: {e}")
+        collection = None
 
 def query_context(question: str):
     sources = []

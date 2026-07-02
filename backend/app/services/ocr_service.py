@@ -1,12 +1,20 @@
 import re
 import difflib
 
-try:
-    import easyocr
-    import torch
-    reader = easyocr.Reader(['en'], gpu=torch.cuda.is_available())
-except Exception as e:
-    reader, print_err = None, print(f"EasyOCR Init Failed: {e}")
+import os
+
+LOW_MEMORY = os.getenv("RENDER") == "true" or os.getenv("LOW_MEMORY_MODE", "true").lower() == "true"
+
+if LOW_MEMORY:
+    reader = None
+    print("⚠️  Low Memory Mode: Skipping EasyOCR initialization.")
+else:
+    try:
+        import easyocr
+        import torch
+        reader = easyocr.Reader(['en'], gpu=torch.cuda.is_available())
+    except Exception as e:
+        reader, print_err = None, print(f"EasyOCR Init Failed: {e}")
 
 def extract_and_verify(images: list[bytes], account_number: str):
     if not reader: return False, [], "OCR Engine Offline"
