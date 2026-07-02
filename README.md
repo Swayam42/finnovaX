@@ -54,7 +54,7 @@
 
 ## 🚀 Project Overview
 
-**FinnovaX** is a production-grade, full-stack FinTech portal built for **KFintech-style mutual fund and investor service management**. It is designed to solve one of the most pressing operational challenges in asset management companies: **manual, error-prone, slow investor grievance and service request processing**.
+**FinnovaX** is a production-grade, full-stack FinTech portal built for **FinnovaX-style mutual fund and investor service management**. It is designed to solve one of the most pressing operational challenges in asset management companies: **manual, error-prone, slow investor grievance and service request processing**.
 
 ### The Business Problem
 
@@ -676,7 +676,7 @@ Every L1 escalation, L2 approval, rejection, and auto-close is written here. The
 ## 📁 Folder Structure
 
 ```
-kfintech-nexus-portal/
+finnovax-nexus-portal/
 │
 ├── frontend/                      # React + Vite application
 │   └── src/

@@ -4,7 +4,7 @@ const cookieService = require('../../services/auth/cookie.service');
 
 exports.refresh = async (req, res) => {
     try {
-        const currentRefreshToken = req.cookies.kfintech_refresh_token;
+        const currentRefreshToken = req.cookies.finnovax_refresh_token;
         if (!currentRefreshToken) return res.status(401).json({ message: 'No refresh token provided.' });
 
         const { newAccessToken, newRefreshToken, userId } = await tokenService.rotateRefreshToken(currentRefreshToken);
@@ -20,7 +20,7 @@ exports.refresh = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
-        const refreshToken = req.cookies.kfintech_refresh_token;
+        const refreshToken = req.cookies.finnovax_refresh_token;
         if (refreshToken) {
             // Revoke specific token (or entire family depending on strictness)
             const crypto = require('crypto');

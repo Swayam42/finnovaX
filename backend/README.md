@@ -87,7 +87,7 @@ This result automatically sets `isPotentialFraud: true` on the ticket and overri
 
 **Input:** `"What is the SLA for a KYC update?"`
 
-1. ChromaDB queries `kfintech_faqs` collection using vector similarity
+1. ChromaDB queries `finnovax_faqs` collection using vector similarity
 2. Top 2 results with L2 distance < 1.1 are returned as context
 3. Context is injected into Gemini prompt: `"Answer only using this context: ..."`
 4. Gemini responds strictly within the FAQ scope
@@ -164,7 +164,7 @@ sentiment_analyzer = pipeline("sentiment-analysis", model="ProsusAI/finbert", de
 
 ## ChromaDB Knowledge Base
 
-On every startup, `knowledge_base.py` checks if `kfintech_faqs` collection exists in ChromaDB. If empty, it seeds it with FinnovaX-specific FAQ documents covering:
+On every startup, `knowledge_base.py` checks if `finnovax_faqs` collection exists in ChromaDB. If empty, it seeds it with FinnovaX-specific FAQ documents covering:
 - KYC update processes
 - Bank account update procedures
 - Nominee registration

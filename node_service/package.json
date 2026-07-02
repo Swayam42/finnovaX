@@ -1,7 +1,7 @@
 {
-  "name": "kfintech-nexus-node-backend",
+  "name": "finnovax-nexus-node-backend",
   "version": "1.0.0",
-  "description": "Core Node.js & MongoDB Backend for KFintech Nexus Portal",
+  "description": "Core Node.js & MongoDB Backend for FinnovaX Nexus Portal",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

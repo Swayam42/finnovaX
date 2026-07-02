@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     const login = useCallback(async (email, password) => {
         const res = await authApi.login(email, password);
         if (res.data.accessToken) {
-            localStorage.setItem('kfintech_access_token', res.data.accessToken);
+            localStorage.setItem('finnovax_access_token', res.data.accessToken);
         }
         return res.data;
     }, []);
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     const verifyOtp = useCallback(async (email, otp) => {
         const res = await authApi.verifyOtp(email, otp);
         if (res.data.accessToken) {
-            localStorage.setItem('kfintech_access_token', res.data.accessToken);
+            localStorage.setItem('finnovax_access_token', res.data.accessToken);
         }
         const { user: userData } = res.data;
         updateSession(userData);
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
         } catch (_) {
             // Ignore errors, still clear client-side session
         } finally {
-            localStorage.removeItem('kfintech_access_token');
+            localStorage.removeItem('finnovax_access_token');
             clearSession();
         }
     }, [clearSession]);

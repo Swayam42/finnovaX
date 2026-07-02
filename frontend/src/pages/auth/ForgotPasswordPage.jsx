@@ -102,11 +102,11 @@ const ForgotPasswordPage = () => {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#faf9f6] dark:bg-zinc-950 selection:bg-kfintech-primary/30 relative overflow-hidden transition-colors duration-500">
+        <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#faf9f6] dark:bg-zinc-950 selection:bg-finnovax-primary/30 relative overflow-hidden transition-colors duration-500">
             <DotBackgroundDemo />
             {/* Background Glows for Glassmorphism */}
             <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
-            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-kfintech-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-finnovax-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
 
             <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20">
                 <ThemeToggle />
@@ -147,7 +147,7 @@ const ForgotPasswordPage = () => {
                                         placeholder="name@company.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
+                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                                     />
                                 </div>
 
@@ -169,7 +169,7 @@ const ForgotPasswordPage = () => {
                                         placeholder="000000"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all text-center tracking-widest text-lg"
+                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 transition-all text-center tracking-widest text-lg"
                                     />
                                     <div className="flex justify-end items-center text-xs mt-1">
                                         {timeLeft > 0 ? (
@@ -194,7 +194,7 @@ const ForgotPasswordPage = () => {
                                             onFocus={() => setIsPasswordFocused(true)}
                                             onBlur={() => setIsPasswordFocused(false)}
                                             onCopy={(e) => e.preventDefault()}
-                                            className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
+                                            className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
                                         />
                                         <Button 
                                             variant="ghost"
@@ -224,7 +224,7 @@ const ForgotPasswordPage = () => {
                                             onFocus={() => setIsConfirmPasswordFocused(true)}
                                             onBlur={() => setIsConfirmPasswordFocused(false)}
                                             onCopy={(e) => e.preventDefault()}
-                                            className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
+                                            className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
                                         />
                                         <Button 
                                             variant="ghost"

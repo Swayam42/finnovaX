@@ -41,13 +41,13 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-black selection:bg-kfintech-primary/30 text-white font-sans overflow-x-hidden">
+        <div className="min-h-screen bg-black selection:bg-finnovax-primary/30 text-white font-sans overflow-x-hidden">
             <LandingNavbar />
 
             {/* Hero Section */}
             <section className="relative min-h-[100vh] flex flex-col justify-center items-center text-center px-4 pt-20">
                 {/* Background Glow Effects */}
-                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-kfintech-primary/10 rounded-full blur-[120px] pointer-events-none z-0" />
+                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-finnovax-primary/10 rounded-full blur-[120px] pointer-events-none z-0" />
                 <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
                 <div className="z-10 max-w-5xl mx-auto flex flex-col items-center w-full">
@@ -56,7 +56,7 @@ const LandingPage = () => {
                         custom={0} initial="hidden" animate="visible" variants={fadeUpVariants}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gray-300 text-sm font-medium mb-8 backdrop-blur-sm"
                     >
-                        <Zap className="w-4 h-4 text-kfintech-primary" />
+                        <Zap className="w-4 h-4 text-finnovax-primary" />
                         <span>FinnovaX Portal 2.0 is now live</span>
                         <ChevronRight className="w-4 h-4 ml-1 opacity-50" />
                     </motion.div>
@@ -118,7 +118,7 @@ const LandingPage = () => {
                             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} custom={0} variants={featureVariants}
                             className="flex flex-col items-center md:items-start text-center md:text-left group"
                         >
-                            <div className="mb-6 p-4 rounded-full bg-gradient-to-b from-white/10 to-transparent border border-white/10 text-white group-hover:border-kfintech-primary/50 group-hover:text-kfintech-primary transition-all duration-500">
+                            <div className="mb-6 p-4 rounded-full bg-gradient-to-b from-white/10 to-transparent border border-white/10 text-white group-hover:border-finnovax-primary/50 group-hover:text-finnovax-primary transition-all duration-500">
                                 <Clock className="w-8 h-8" strokeWidth={1.5} />
                             </div>
                             <h3 className="text-2xl font-semibold text-white mb-4">Real-time SLAs</h3>
@@ -160,7 +160,7 @@ const LandingPage = () => {
 
             {/* CTA Section */}
             <section id="security" className="relative z-10 py-32 px-6 border-t border-white/5 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-kfintech-primary/5 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-finnovax-primary/5 to-transparent pointer-events-none" />
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-8">Ready to upgrade?</h2>
                     <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto font-light">

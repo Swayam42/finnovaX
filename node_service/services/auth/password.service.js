@@ -32,7 +32,7 @@ exports.sendResetEmail = async (email, resetToken) => {
     
     await sendEmail({
         to: email,
-        subject: 'KFintech Password Reset',
+        subject: 'FinnovaX Password Reset',
         message: `<h1>Password Reset Request</h1><p>Click <a href="${resetUrl}">here</a> to reset your password.</p><p>This link expires in 30 minutes.</p>`
     });
 };

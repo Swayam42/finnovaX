@@ -77,7 +77,7 @@ def inject_tickets():
         
         lines = [
             "==================================================",
-            "      KFINTECH NEXUS PORTAL - INVESTOR SERVICES   ",
+            "      FINNOVAX NEXUS PORTAL - INVESTOR SERVICES   ",
             "==================================================",
             "TICKET DATA RECONCILIATION FILE",
             f"TICKET ID: DEMO_TKT_{i}",

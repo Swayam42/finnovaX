@@ -11,7 +11,7 @@ const apiClient = axios.create({
 
 // Request Interceptor: Attach Bearer token if cookies fail
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('kfintech_access_token');
+    const token = localStorage.getItem('finnovax_access_token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -25,8 +25,8 @@ apiClient.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
         const clearAuthStorage = () => {
-            localStorage.removeItem('kfintech_access_token');
-            localStorage.removeItem('kfintech_user');
+            localStorage.removeItem('finnovax_access_token');
+            localStorage.removeItem('finnovax_user');
         };
 
         if (error.response?.status === 401 && !originalRequest._retry) {

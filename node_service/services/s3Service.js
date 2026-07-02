@@ -6,7 +6,7 @@ const {
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { s3 } = require("../config/aws");
 
-const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME || "kfintech-bucket";
+const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME || "finnovax-bucket";
 
 // Upload File
 const uploadToS3 = async (params) => {

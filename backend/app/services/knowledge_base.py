@@ -11,7 +11,7 @@ def seed_faqs():
     client = chromadb.PersistentClient(path=db_path)
     emb_fn = embedding_functions.DefaultEmbeddingFunction()
     
-    collection_name = "kfintech_faqs"
+    collection_name = "finnovax_faqs"
     print(f"Creating or getting collection: {collection_name}")
     collection = client.get_or_create_collection(
         name=collection_name,

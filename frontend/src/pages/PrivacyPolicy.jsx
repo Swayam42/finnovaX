@@ -4,12 +4,12 @@ import Footer from '../components/common/Footer';
 
 const PrivacyPolicy = () => {
     return (
-        <div className="min-h-screen bg-black text-white font-sans selection:bg-kfintech-primary/30">
+        <div className="min-h-screen bg-black text-white font-sans selection:bg-finnovax-primary/30">
             <LandingNavbar />
             
             <main className="pt-32 pb-24 px-6 relative">
                 {/* Minimal Background Glow */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-kfintech-primary/10 blur-[100px] pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-finnovax-primary/10 blur-[100px] pointer-events-none" />
 
                 <div className="max-w-3xl mx-auto relative z-10">
                     <div className="mb-12 border-b border-white/10 pb-8">
@@ -49,7 +49,7 @@ const PrivacyPolicy = () => {
                         <section>
                             <h2 className="text-2xl font-semibold text-white mb-4">5. Contact Us</h2>
                             <p>
-                                If you have any questions or concerns regarding this Privacy Policy, please contact us at <a href="mailto:privacy@finnovax.com" className="text-kfintech-primary hover:underline">privacy@finnovax.com</a>.
+                                If you have any questions or concerns regarding this Privacy Policy, please contact us at <a href="mailto:privacy@finnovax.com" className="text-finnovax-primary hover:underline">privacy@finnovax.com</a>.
                             </p>
                         </section>
                     </div>

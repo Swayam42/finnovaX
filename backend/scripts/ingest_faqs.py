@@ -26,7 +26,7 @@ def main():
     # We use the default embedding function (all-MiniLM-L6-v2 equivalent in chromadb)
     emb_fn = embedding_functions.DefaultEmbeddingFunction()
     
-    collection_name = "kfintech_faqs"
+    collection_name = "finnovax_faqs"
     print(f"Getting or creating collection '{collection_name}'...")
     
     # Delete if exists to do a fresh ingestion

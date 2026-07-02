@@ -6,7 +6,7 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile
-    container_name: kfintech_backend
+    container_name: finnovax_backend
     ports:
       - "8000:8000"
     environment:
@@ -22,29 +22,29 @@ services:
               count: 1
               capabilities: [gpu]
     networks:
-      - kfintech-network
+      - finnovax-network
 
   # Local MongoDB Replica Set for strict transactions
   mongodb:
     image: mongo:latest
-    container_name: kfintech_mongo
+    container_name: finnovax_mongo
     command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     ports:
       - "27018:27017"
     networks:
-      - kfintech-network
+      - finnovax-network
 
   # Node.js (Express/NestJS) Backend
   node_service:
     build:
       context: ./node_service
       dockerfile: Dockerfile
-    container_name: kfintech_node
+    container_name: finnovax_node
     ports:
       - "5000:5000"
     environment:
       - PORT=5000
-      - MONGODB_URI=mongodb://mongodb:27017/kfintech_nexus?directConnection=true
+      - MONGODB_URI=mongodb://mongodb:27017/finnovax_nexus?directConnection=true
       - ML_SERVICE_URL=http://backend:8000
       - AWS_ENDPOINT_URL=http://localstack:4566
       - AWS_ACCESS_KEY_ID=test
@@ -57,14 +57,14 @@ services:
       - mongodb
       - backend
     networks:
-      - kfintech-network
+      - finnovax-network
 
   # React Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: kfintech_frontend
+    container_name: finnovax_frontend
     ports:
       - "5173:5173"
     volumes:
@@ -73,24 +73,24 @@ services:
     depends_on:
       - node_service
     networks:
-      - kfintech-network
+      - finnovax-network
 
 
 
   # AWS LocalStack
   localstack:
     image: localstack/localstack:2.3.2
-    container_name: kfintech_localstack
+    container_name: finnovax_localstack
     ports:
       - "4566:4566"
     environment:
       - DEBUG=1
       - AWS_DEFAULT_REGION=ap-south-1
     networks:
-      - kfintech-network
+      - finnovax-network
 
 networks:
-  kfintech-network:
+  finnovax-network:
     driver: bridge
 
 volumes:

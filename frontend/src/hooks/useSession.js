@@ -15,8 +15,8 @@ export const useSession = () => {
                 setError(null);
             } catch (err) {
                 // Token expired or invalid
-                localStorage.removeItem('kfintech_user');
-                localStorage.removeItem('kfintech_access_token');
+                localStorage.removeItem('finnovax_user');
+                localStorage.removeItem('finnovax_access_token');
                 setUser(null);
                 setError(err);
             } finally {
@@ -28,13 +28,13 @@ export const useSession = () => {
     }, []);
 
     const clearSession = useCallback(() => {
-        localStorage.removeItem('kfintech_user');
-        localStorage.removeItem('kfintech_access_token');
+        localStorage.removeItem('finnovax_user');
+        localStorage.removeItem('finnovax_access_token');
         setUser(null);
     }, []);
 
     const updateSession = useCallback((userData) => {
-        localStorage.setItem('kfintech_user', JSON.stringify(userData));
+        localStorage.setItem('finnovax_user', JSON.stringify(userData));
         setUser(userData);
     }, []);
 

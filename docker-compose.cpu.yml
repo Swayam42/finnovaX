@@ -6,7 +6,7 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile.cpu
-    container_name: kfintech_backend_cpu
+    container_name: finnovax_backend_cpu
     ports:
       - "8000:8000"
     environment:
@@ -15,29 +15,29 @@ services:
     volumes:
       - ./backend:/app
     networks:
-      - kfintech-network
+      - finnovax-network
 
   # Local MongoDB Replica Set for strict transactions
   mongodb:
     image: mongo:latest
-    container_name: kfintech_mongo_cpu
+    container_name: finnovax_mongo_cpu
     command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     ports:
       - "27018:27017"
     networks:
-      - kfintech-network
+      - finnovax-network
 
   # Node.js (Express/NestJS) Backend
   node_service:
     build:
       context: ./node_service
       dockerfile: Dockerfile
-    container_name: kfintech_node_cpu
+    container_name: finnovax_node_cpu
     ports:
       - "5000:5000"
     environment:
       - PORT=5000
-      - MONGODB_URI=mongodb://mongodb:27017/kfintech_nexus?directConnection=true
+      - MONGODB_URI=mongodb://mongodb:27017/finnovax_nexus?directConnection=true
       - ML_SERVICE_URL=http://backend:8000
       - AWS_ENDPOINT_URL=http://localstack:4566
       - AWS_ACCESS_KEY_ID=test
@@ -47,47 +47,47 @@ services:
       - mongodb
       - backend
     networks:
-      - kfintech-network
+      - finnovax-network
 
   # React Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: kfintech_frontend_cpu
+    container_name: finnovax_frontend_cpu
     ports:
       - "5173:5173"
     depends_on:
       - node_service
     networks:
-      - kfintech-network
+      - finnovax-network
 
   # Local Llama 3 AI Engine (CPU ONLY)
   ollama:
     image: ollama/ollama:latest
-    container_name: kfintech_ollama_cpu
+    container_name: finnovax_ollama_cpu
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
     entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 10 && ollama pull llama3.2:1b && wait"]
     networks:
-      - kfintech-network
+      - finnovax-network
 
   # AWS LocalStack
   localstack:
     image: localstack/localstack:2.3.2
-    container_name: kfintech_localstack_cpu
+    container_name: finnovax_localstack_cpu
     ports:
       - "4566:4566"
     environment:
       - DEBUG=1
       - AWS_DEFAULT_REGION=ap-south-1
     networks:
-      - kfintech-network
+      - finnovax-network
 
 networks:
-  kfintech-network:
+  finnovax-network:
     driver: bridge
 
 volumes:

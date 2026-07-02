@@ -284,9 +284,9 @@ const Profile = () => {
                                             <PopoverContent className="w-auto p-0" align="start">
                                                 <Calendar
                                                     mode="single"
-                                                    captionLayout="dropdown-buttons"
-                                                    fromYear={1900}
-                                                    toYear={new Date().getFullYear()}
+                                                    captionLayout="dropdown"
+                                                    startMonth={new Date(1900, 0)}
+                                                    endMonth={new Date()}
                                                     selected={profileData.dob ? new Date(profileData.dob) : undefined}
                                                     onSelect={(date) => {
                                                         if (date) {

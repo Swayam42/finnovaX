@@ -11,13 +11,13 @@ import DotBackgroundDemo from "@/components/ui/DotBackgroundDemo";
 import { toast } from "sonner";
 
 const DEMO_CREDENTIALS = [
-    { email: 'investor@kfintech.com', role: 'INVESTOR' },
-    { email: 'l1agent@kfintech.com',  role: 'ADMIN_L1' },
-    { email: 'l2agent@kfintech.com',  role: 'ADMIN_L2' },
-    { email: 'admin@kfintech.com',    role: 'ADMIN_SUPER' },
+    { email: 'investor@finnovax.com', role: 'INVESTOR' },
+    { email: 'l1agent@finnovax.com',  role: 'ADMIN_L1' },
+    { email: 'l2agent@finnovax.com',  role: 'ADMIN_L2' },
+    { email: 'admin@finnovax.com',    role: 'ADMIN_SUPER' },
 ];
 
-const DEMO_PASSWORD = 'KFintech@2026';
+const DEMO_PASSWORD = 'FinnovaX@2026';
 
 const LoginPage = () => {
     const { login, verifyOtp, getRoleDefaultRoute, updateSession } = useAuth();
@@ -145,10 +145,10 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#faf9f6] dark:bg-zinc-950 selection:bg-kfintech-primary/30 relative overflow-hidden transition-colors duration-500">
+        <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#faf9f6] dark:bg-zinc-950 selection:bg-finnovax-primary/30 relative overflow-hidden transition-colors duration-500">
             <DotBackgroundDemo />
             {/* Background Glows for Glassmorphism */}
-            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-kfintech-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-finnovax-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
             <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
 
             <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-20">
@@ -202,7 +202,7 @@ const LoginPage = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="name@company.com"
-                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
+                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                                     />
                                 </div>
 
@@ -221,7 +221,7 @@ const LoginPage = () => {
                                             value={password}
                                             onChange={(e) => { setPassword(e.target.value); if (error) setError(''); }}
                                             placeholder="••••••••••"
-                                            className={`bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all pr-10 ${shakePassword ? 'animate-shake border-red-400 dark:border-red-500' : ''}`}
+                                            className={`bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all pr-10 ${shakePassword ? 'animate-shake border-red-400 dark:border-red-500' : ''}`}
                                         />
                                         <Button 
                                             variant="ghost"
@@ -255,7 +255,7 @@ const LoginPage = () => {
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                                         placeholder={authType === 'GOOGLE' ? "6-digit code" : "000000"}
-                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all text-center tracking-widest text-lg"
+                                        className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 transition-all text-center tracking-widest text-lg"
                                     />
                                     
                                     {authType === 'EMAIL' && (

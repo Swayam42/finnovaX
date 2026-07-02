@@ -40,7 +40,7 @@ const globalLimiter = rateLimit({
 app.use('/api/', globalLimiter);
 
 // Setup MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27018/kfintech_nexus?directConnection=true';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27018/finnovax_nexus?directConnection=true';
 
 mongoose.connect(MONGODB_URI)
     .then(async () => {
@@ -111,10 +111,10 @@ app.use('/api/notifications', notificationRoutes);
 app.get('/health', (req, res) => {
     res.status(200).json({ 
         status: 'UP', 
-        message: 'KFintech Node.js Core Backend is fully operational.' 
+        message: 'FinnovaX Node.js Core Backend is fully operational.' 
     });
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 KFintech Nexus Server is running on port ${PORT}.`);
+    console.log(`🚀 FinnovaX Nexus Server is running on port ${PORT}.`);
 });

@@ -65,7 +65,7 @@ async function testLocalStack() {
         });
         await sesClient.send(new VerifyEmailIdentityCommand({ EmailAddress: 'test@example.com' }));
         const emailResponse = await sendEmail({
-            to: process.env.SMTP_USER ||"investor@kfintech.com",
+            to: process.env.SMTP_USER ||"investor@finnovax.com",
             subject: "Welcome to FinnovaX",
             message: "<h1>Welcome!</h1><p>Your account is ready.</p>"
         });

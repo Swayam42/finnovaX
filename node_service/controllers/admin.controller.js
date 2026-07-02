@@ -56,7 +56,7 @@ exports.verifyInvestorDocument = async (req, res) => {
                 Body: file.buffer,
                 ContentType: file.mimetype,
             });
-            const bucket = process.env.AWS_BUCKET_NAME || 'kfintech-bucket';
+            const bucket = process.env.AWS_BUCKET_NAME || 'finnovax-bucket';
             if (process.env.AWS_ENDPOINT_URL) {
                 const endpoint = process.env.PUBLIC_S3_URL || 'http://localhost:4566';
                 documentUrl = `${endpoint}/${bucket}/${encodeURIComponent(fileName)}`;

@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        kfintech: {
+        finnovax: {
           bg: '#0A0F1C',
           card: '#131B2F',
           border: '#1E293B',

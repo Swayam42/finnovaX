@@ -27,11 +27,11 @@ const ProfileCompletionModal = ({ onGoToProfile }) => {
                 hideCloseButton={true} // In case the primitive supports this
             >
                 {/* Custom glow effect */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-kfintech-primary/10 blur-[60px] rounded-full pointer-events-none" />
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-finnovax-primary/10 blur-[60px] rounded-full pointer-events-none" />
                 
                 <DialogHeader className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 relative z-10">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900 mb-2">
-                        <AlertCircle className="h-6 w-6 text-kfintech-primary dark:text-zinc-50" />
+                        <AlertCircle className="h-6 w-6 text-finnovax-primary dark:text-zinc-50" />
                     </div>
                     <DialogTitle className="text-xl text-zinc-900 dark:text-zinc-50">Complete Your Profile</DialogTitle>
                     <DialogDescription className="text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">

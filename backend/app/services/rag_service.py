@@ -17,7 +17,7 @@ def get_collection():
                     db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
                     chroma_client = chromadb.PersistentClient(path=db_path)
                     emb_fn = embedding_functions.DefaultEmbeddingFunction()
-                    _collection = chroma_client.get_collection(name="kfintech_faqs", embedding_function=emb_fn)
+                    _collection = chroma_client.get_collection(name="finnovax_faqs", embedding_function=emb_fn)
                 except Exception as e:
                     print(f"Warning: Could not connect to ChromaDB or collection not found. Error: {e}")
                     _collection = None

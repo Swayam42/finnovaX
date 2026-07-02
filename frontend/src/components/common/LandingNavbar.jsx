@@ -36,11 +36,11 @@ const LandingNavbar = () => {
                 
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 group">
-                    <div className="w-8 h-8 rounded-lg bg-kfintech-primary/20 flex items-center justify-center border border-kfintech-primary/30 group-hover:bg-kfintech-primary/40 transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-finnovax-primary/20 flex items-center justify-center border border-finnovax-primary/30 group-hover:bg-finnovax-primary/40 transition-colors">
                         <Rocket className="w-5 h-5 text-white" />
                     </div>
                     <span className="text-2xl font-bold tracking-tight text-white">
-                        Finnova<span className="text-kfintech-primary">X</span>
+                        Finnova<span className="text-finnovax-primary">X</span>
                     </span>
                 </Link>
 

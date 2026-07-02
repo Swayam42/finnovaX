@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 exports.authenticate = (req, res, next) => {
-    let token = req.cookies.kfintech_access_token;
+    let token = req.cookies.finnovax_access_token;
 
     // Fallback to Bearer token if cookies are blocked by cross-origin settings
     if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
@@ -38,7 +38,7 @@ exports.authorize = (...allowedRoles) => {
 };
 
 exports.optionalAuthenticate = (req, res, next) => {
-    let token = req.cookies.kfintech_access_token;
+    let token = req.cookies.finnovax_access_token;
     if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
         token = req.headers.authorization.split(' ')[1];
     }

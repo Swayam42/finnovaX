@@ -33,7 +33,7 @@ export default function CometCardDemo() {
         </div>
         <div className="mt-4 flex flex-shrink-0 items-center justify-between p-2 font-mono text-white/80 dark:text-white">
           <div className="text-xs font-semibold">VIP Pass</div>
-          <div className="text-xs text-kfintech-primary dark:text-blue-400 font-bold tracking-widest">#FNX-2026</div>
+          <div className="text-xs text-finnovax-primary dark:text-blue-400 font-bold tracking-widest">#FNX-2026</div>
         </div>
       </div>
     </CometCard>

@@ -1,6 +1,6 @@
-# 🚀 KFintech AI Microservice — API Reference
+# 🚀 FinnovaX AI Microservice — API Reference
 
-Welcome to the **KFintech AI Models API**. This documentation provides the exact JSON contracts, request structures, and response schemas required for the Node.js and React teams to integrate with our backend AI services.
+Welcome to the **FinnovaX AI Models API**. This documentation provides the exact JSON contracts, request structures, and response schemas required for the Node.js and React teams to integrate with our backend AI services.
 
 **Hackathon Business Impact:** By decoupling our AI models into a dedicated FastAPI microservice, we achieve a **99% reduction in manual triage effort**. This API empowers the orchestrator to resolve unstructured text and image data instantly using CUDA-accelerated inference (with graceful CPU fallbacks).
 
@@ -86,7 +86,7 @@ curl -X POST "http://localhost:8000/api/ai/ocr-verify" \
 {
   "account_found": true,
   "extracted_text": [
-    "KFintech",
+    "FinnovaX",
     "Statement of Account",
     "Account No:",
     "1Z3-456 789",
@@ -132,7 +132,7 @@ A highly compliant AI summarization endpoint. It passes the user's grievance to 
   "query": "Summarize this ticket: I was charged a management fee twice this month on my index fund...",
   "response": "{\"bullets\": [\"The investor was charged a management fee twice this month.\", \"The investor expects an immediate reversal of the duplicate charge.\", \"The investor expressed severe frustration, accusing the platform of theft and scam.\"]}",
   "retrieved_data_source": [
-    "KFintech Internal Knowledge Base (Simulated)"
+    "FinnovaX Internal Knowledge Base (Simulated)"
   ]
 }
 ```

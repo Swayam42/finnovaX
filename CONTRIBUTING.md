@@ -1,6 +1,6 @@
-# Contributing to KFintech Nexus Portal
+# Contributing to FinnovaX Nexus Portal
 
-Welcome! Thank you for your interest in contributing to the **KFintech Nexus Portal**, an AI-driven, enterprise-grade grievance management system. We are actively expanding this project for our upcoming hackathon presentation and value high-impact contributions that drive **business efficiency, AI accuracy, and system scalability.**
+Welcome! Thank you for your interest in contributing to the **FinnovaX Nexus Portal**, an AI-driven, enterprise-grade grievance management system. We are actively expanding this project for our upcoming hackathon presentation and value high-impact contributions that drive **business efficiency, AI accuracy, and system scalability.**
 
 ## 🎯 Our Hackathon Vision
 Our goal is to demonstrate how unstructured, complex investor grievances can be fully automated using LLMs (Llama 3 via Ollama), NLP (FinBERT), and Computer Vision (EasyOCR). Contributions should align with these core objectives:

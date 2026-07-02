@@ -34,7 +34,7 @@ exports.uploadDocuments = async (files) => {
                 try {
                     const uploadResult = await new Promise((resolve, reject) => {
                         cloudinary.uploader.upload_stream(
-                            { resource_type: 'auto', public_id: fileName, folder: 'kfintech-nexus' },
+                            { resource_type: 'auto', public_id: fileName, folder: 'finnovax-nexus' },
                             (error, result) => {
                                 if (error) reject(error);
                                 else resolve(result);
@@ -59,7 +59,7 @@ exports.uploadDocuments = async (files) => {
                     ContentType: file.mimetype,
                 });
                 
-                const bucket = process.env.AWS_BUCKET_NAME || "kfintech-bucket";
+                const bucket = process.env.AWS_BUCKET_NAME || "finnovax-bucket";
                 if (process.env.AWS_ENDPOINT_URL) {
                     const publicEndpoint = process.env.PUBLIC_S3_URL || "http://localhost:4566";
                     documentUrl = `${publicEndpoint}/${bucket}/${encodeURIComponent(fileName)}`;

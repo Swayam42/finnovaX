@@ -44,7 +44,7 @@ async def query_llm(full_prompt: str) -> str:
 
 async def summarize_ticket(ticket_data_str: str) -> list[str]:
     system_prompt = (
-        "You are an AI assistant for KFintech Nexus Portal. Your task is to summarize the following "
+        "You are an AI assistant for FinnovaX Nexus Portal. Your task is to summarize the following "
         "ticket data into 3 concise bullet points. Return ONLY a JSON array of strings, with no other text."
     )
     full_prompt = f"{system_prompt}\n\nTICKET DATA:\n{ticket_data_str}"

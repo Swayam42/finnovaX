@@ -4,6 +4,7 @@ import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 function Calendar({
   className,
@@ -131,6 +132,28 @@ function Calendar({
                 {children}
               </div>
             </td>
+          );
+        },
+        Dropdown: ({ value, onChange, children, options, ...props }) => {
+          const dropdownOptions = options || React.Children.toArray(children).map((child) => ({
+            value: child.props.value,
+            label: child.props.children,
+          }));
+          return (
+            <div className="relative inline-flex items-center">
+              <select
+                value={value?.toString()}
+                onChange={(e) => onChange?.(e)}
+                className="h-8 appearance-none bg-transparent pr-7 pl-2 text-sm font-medium outline-none focus:ring-0 border border-transparent hover:bg-muted/50 rounded-md transition-colors cursor-pointer disabled:opacity-50 dark:bg-transparent dark:text-zinc-100"
+              >
+                {dropdownOptions.map((option, id) => (
+                  <option key={`${option.value}-${id}`} value={option.value?.toString() || ""} className="bg-popover text-popover-foreground text-sm">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute right-2 size-4 text-muted-foreground opacity-50" />
+            </div>
           );
         },
         ...components,

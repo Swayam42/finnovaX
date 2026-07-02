@@ -4,7 +4,7 @@ import Footer from '../components/common/Footer';
 
 const TermsOfService = () => {
     return (
-        <div className="min-h-screen bg-black text-white font-sans selection:bg-kfintech-primary/30">
+        <div className="min-h-screen bg-black text-white font-sans selection:bg-finnovax-primary/30">
             <LandingNavbar />
             
             <main className="pt-32 pb-24 px-6 relative">

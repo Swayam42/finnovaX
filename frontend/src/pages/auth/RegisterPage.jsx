@@ -80,7 +80,7 @@ const RegisterPage = () => {
       const response = await apiClient.post('/auth/register', finalValues);
       const data = response.data;
       if (data.accessToken) {
-          localStorage.setItem('kfintech_access_token', data.accessToken);
+          localStorage.setItem('finnovax_access_token', data.accessToken);
       }
       navigate('/login', { state: { message: 'Registration successful! Please login.' } });
     } catch (err) {
@@ -93,11 +93,11 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#faf9f6] dark:bg-zinc-950 selection:bg-kfintech-primary/30 relative overflow-hidden transition-colors duration-500">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#faf9f6] dark:bg-zinc-950 selection:bg-finnovax-primary/30 relative overflow-hidden transition-colors duration-500">
       {/*<GridBackground/>*/}
       <DotBackgroundDemo/>
       {/* Background Glows for Glassmorphism */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-kfintech-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-finnovax-primary/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
       <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none z-0 hidden dark:block" />
 
       <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-20">
@@ -139,7 +139,7 @@ const RegisterPage = () => {
                 <Input
                   id="name"
                   placeholder="Jane Doe"
-                  className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
+                  className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                   {...form.register("name")}
                 />
                 {form.formState.errors.name && (
@@ -153,7 +153,7 @@ const RegisterPage = () => {
                   id="email"
                   type="email"
                   placeholder="name@company.com"
-                  className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
+                  className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                   {...form.register("email")}
                 />
                 {form.formState.errors.email && (
@@ -172,7 +172,7 @@ const RegisterPage = () => {
                     type="tel"
                     maxLength={10}
                     placeholder="0000000000"
-                    className="flex-1 bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
+                    className="flex-1 bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all"
                     {...phoneRegister}
                     onChange={(e) => {
                       e.target.value = e.target.value.replace(/\D/g, '');
@@ -191,7 +191,7 @@ const RegisterPage = () => {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
+                    className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
                     onFocus={() => setIsPasswordFocused(true)}
                     onCopy={(e) => e.preventDefault()}
                     {...passwordRegister}
@@ -230,7 +230,7 @@ const RegisterPage = () => {
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
-                    className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-kfintech-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
+                    className="bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-finnovax-primary text-zinc-900 dark:text-zinc-50 transition-all pr-10"
                     onFocus={() => setIsConfirmPasswordFocused(true)}
                     onCopy={(e) => e.preventDefault()}
                     {...confirmPasswordRegister}

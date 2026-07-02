@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
@@ -22,14 +23,14 @@ try {
     User = mongoose.model('User', UserSchema);
 }
 
-const DEMO_PASSWORD = 'KFintech@2026';
+const DEMO_PASSWORD = 'FinnovaX@2026';
 const SALT_ROUNDS = 10;
 
 const DEMO_USERS = [
     {
         _id: new mongoose.Types.ObjectId('60d5ecb8b392d700153f3a00'),
         name: 'Amit Behera',
-        email: 'investor@kfintech.com',
+        email: 'investor@finnovax.com',
         phoneNumber: '+911234567890',
         role: 'INVESTOR',
         isActive: true,
@@ -41,7 +42,7 @@ const DEMO_USERS = [
     {
         _id: new mongoose.Types.ObjectId('60d5ecb8b392d700153f3a01'),
         name: 'Priya Sharma',
-        email: 'l1agent@kfintech.com',
+        email: 'l1agent@finnovax.com',
         phoneNumber: '+911234567891',
         role: 'ADMIN_L1',
         isActive: true
@@ -49,7 +50,7 @@ const DEMO_USERS = [
     {
         _id: new mongoose.Types.ObjectId('60d5ecb8b392d700153f3a02'),
         name: 'Rahul Verma',
-        email: 'l2agent@kfintech.com',
+        email: 'l2agent@finnovax.com',
         phoneNumber: '+911234567892',
         role: 'ADMIN_L2',
         isActive: true
@@ -57,7 +58,7 @@ const DEMO_USERS = [
     {
         _id: new mongoose.Types.ObjectId('60d5ecb8b392d700153f3a03'),
         name: 'Ashutosh Kumar',
-        email: 'admin@kfintech.com',
+        email: 'admin@finnovax.com',
         phoneNumber: '+911234567893',
         role: 'ADMIN_SUPER',
         isActive: true
@@ -90,11 +91,11 @@ async function seedUsers() {
             console.log(`✅ Seeded user: ${userData.email} [${userData.role}]`);
         }
 
-        console.log('\n📋 Demo Credentials (all use password: KFintech@2026)');
-        console.log('  investor@kfintech.com  → INVESTOR');
-        console.log('  l1agent@kfintech.com   → ADMIN_L1');
-        console.log('  l2agent@kfintech.com   → ADMIN_L2');
-        console.log('  admin@kfintech.com     → ADMIN_SUPER\n');
+        console.log('\n📋 Demo Credentials (all use password: FinnovaX@2026)');
+        console.log('  investor@finnovax.com  → INVESTOR');
+        console.log('  l1agent@finnovax.com   → ADMIN_L1');
+        console.log('  l2agent@finnovax.com   → ADMIN_L2');
+        console.log('  admin@finnovax.com     → ADMIN_SUPER\n');
 
     } catch (err) {
         console.error('⚠️ User seed error (non-fatal):', err.message);
@@ -104,7 +105,7 @@ async function seedUsers() {
 // When required by server.js: just run and resolve (no process.exit)
 // When run directly: connect, seed, then exit
 if (require.main === module) {
-    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27018/kfintech_nexus?directConnection=true';
+    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27018/finnovax_nexus?directConnection=true';
     mongoose.connect(MONGODB_URI)
         .then(() => seedUsers())
         .then(() => process.exit(0))
