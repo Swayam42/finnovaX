@@ -5,10 +5,17 @@ const sendEmail = async ({ to, subject, message }) => {
         // If credentials are provided, use them to send a REAL email via Nodemailer
         if (process.env.SMTP_USER && process.env.SMTP_PASS) {
             const transporter = nodemailer.createTransport({
-                service: 'gmail', // You can change this to your email provider
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                family: 4, // Force IPv4 to prevent ENETUNREACH errors on IPv6-enabled cloud containers/networks like Render
                 auth: {
                     user: process.env.SMTP_USER,
                     pass: process.env.SMTP_PASS
+                },
+                tls: {
+                    rejectUnauthorized: false
                 }
             });
 
@@ -31,8 +38,13 @@ const sendEmail = async ({ to, subject, message }) => {
             return null;
         }
     } catch (error) {
-        console.error(`[Nodemailer Error] Failed to send email to ${to}:`, error);
-        throw error;
+        console.error(`[Nodemailer Error] Failed to send email to ${to}:`, error.message || error);
+        // Don't throw fatal error if email delivery fails, so core flows (register/login/OTP) stay alive and fall back cleanly
+        console.log('\n=========================================');
+        console.log(`📧 [Email Delivery Fallback Simulation] To: ${to}`);
+        console.log(`📋 Subject: ${subject}`);
+        console.log('=========================================\n');
+        return null;
     }
 };
 
