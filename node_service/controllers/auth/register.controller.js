@@ -25,8 +25,9 @@ exports.register = async (req, res) => {
             role: 'INVESTOR'
         });
 
-        // Send Welcome Email
-            sesService.sendEmail({
+        // Send Welcome Email (await to ensure SMTP delivery before closing request socket)
+        try {
+            await sesService.sendEmail({
                 to: newUser.email,
                 subject: 'Welcome to FinnovaX Portal!',
                 message: `
@@ -40,21 +41,28 @@ exports.register = async (req, res) => {
                             <p style="color: #52525b; font-size: 15px; margin-bottom: 24px;">Thank you for joining the FinnovaX Portal. We're thrilled to have you on board.</p>
                             <p style="color: #52525b; font-size: 15px; margin-bottom: 24px;">You can now securely log in to your dashboard to track your investments, manage your profile, and create support tickets.</p>
                             <div style="text-align: center; margin: 35px 0;">
-                                <a href="http://localhost:5173/login" style="background-color: #18181b; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 15px; display: inline-block;">Go to Dashboard</a>
+                                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" style="background-color: #18181b; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 15px; display: inline-block;">Go to Dashboard</a>
                             </div>
                             <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 30px 0;" />
                             <p style="color: #a1a1aa; font-size: 13px; margin: 0; text-align: center;">Need help? Reply to this email to reach our support team.</p>
                         </div>
                     </div>
                 `
-            }).catch(err => console.error('Failed to send welcome email:', err));
+            });
+        } catch (err) {
+            console.error('Failed to send welcome email:', err.message || err);
+        }
 
         // Send Welcome SMS if phone number exists
         if (newUser.phoneNumber) {
-            snsService.sendSMS({
-                phoneNumber: newUser.phoneNumber,
-                message: `Welcome to FinnovaX, ${newUser.name}! Your account has been successfully created.`
-            }).catch(err => console.error('Failed to send welcome SMS:', err));
+            try {
+                await snsService.sendSMS({
+                    phoneNumber: newUser.phoneNumber,
+                    message: `Welcome to FinnovaX, ${newUser.name}! Your account has been successfully created.`
+                });
+            } catch (err) {
+                console.error('Failed to send welcome SMS:', err.message || err);
+            }
         }
 
         const accessToken = tokenService.generateAccessToken(newUser);

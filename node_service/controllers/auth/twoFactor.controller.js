@@ -138,20 +138,24 @@ exports.verifyEmail2FA = async (req, res) => {
         user.twoFactorType = 'EMAIL';
         await user.save();
 
-        // Send confirmation email asynchronously (non-blocking)
-        sendEmail({
-            to: user.email,
-            subject: 'FinnovaX — 2FA Preference Updated',
-            message: `
-                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fbfbfb; padding: 40px 20px; color: #18181b;">
-                    <div style="max-width: 500px; margin: 0 auto; background: #fff; padding: 40px; border: 1px solid #e4e4e7; border-radius: 12px;">
-                        <h2 style="color: #18181b; font-size: 20px; font-weight: 600; margin-top: 0;">2FA Preference Updated</h2>
-                        <p style="color: #52525b;">Hello ${user.name || 'Valued Investor'},</p>
-                        <p style="color: #52525b;">Your Two-Factor Authentication has been updated to <strong>Email OTP</strong>. All future login OTPs will be sent to this email address.</p>
+        // Send confirmation email (awaited to guarantee delivery)
+        try {
+            await sendEmail({
+                to: user.email,
+                subject: 'FinnovaX — 2FA Preference Updated',
+                message: `
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fbfbfb; padding: 40px 20px; color: #18181b;">
+                        <div style="max-width: 500px; margin: 0 auto; background: #fff; padding: 40px; border: 1px solid #e4e4e7; border-radius: 12px;">
+                            <h2 style="color: #18181b; font-size: 20px; font-weight: 600; margin-top: 0;">2FA Preference Updated</h2>
+                            <p style="color: #52525b;">Hello ${user.name || 'Valued Investor'},</p>
+                            <p style="color: #52525b;">Your Two-Factor Authentication has been updated to <strong>Email OTP</strong>. All future login OTPs will be sent to this email address.</p>
+                        </div>
                     </div>
-                </div>
-            `
-        }).catch(err => console.error('[2FA] Confirmation email failed:', err));
+                `
+            });
+        } catch (err) {
+            console.error('[2FA] Confirmation email failed:', err.message || err);
+        }
 
         const userService = require('../../services/auth/user.service');
         return res.status(200).json({

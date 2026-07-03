@@ -15,8 +15,8 @@ async def query_gemini(prompt: str) -> str:
     if not client:
         return "Gemini API key is missing, and Ollama is unreachable. Cannot process request."
     
-    max_retries = 3
-    base_delay = 15 # Gemini quota errors usually request ~12-15s wait
+    max_retries = 2
+    base_delay = 2 # Shorter retry wait so fallbacks engage rapidly without UI freeze
 
     for attempt in range(max_retries):
         try:
@@ -61,6 +61,40 @@ async def query_llm(full_prompt: str) -> str:
         
     return llm_response
 
+def generate_extractive_summary(ticket_data) -> list[str]:
+    import ast
+    title = ""
+    desc = ""
+    service_type = ""
+    data = None
+    if isinstance(ticket_data, dict):
+        data = ticket_data
+    elif isinstance(ticket_data, str):
+        try:
+            data = ast.literal_eval(ticket_data)
+        except Exception:
+            pass
+            
+    if isinstance(data, dict):
+        title = str(data.get("title", "")).strip()
+        desc = str(data.get("description", "")).strip()
+        service_type = str(data.get("serviceType", "")).strip()
+        
+    str_val = str(ticket_data)
+    if not desc and str_val:
+        desc = str_val[:200]
+        
+    bullet1 = f"Service Request: {title}" if title else (f"Type: {service_type}" if service_type else "General Investor Service Request")
+    
+    desc_clean = desc.replace('\n', ' ').strip()
+    if len(desc_clean) > 110:
+        desc_clean = desc_clean[:110] + "..."
+    bullet2 = f"Detail: {desc_clean}" if desc_clean else "Review attached document and investor notes for specifics."
+    
+    bullet3 = "Action Required: L1/L2 desk review needed for SLA compliance and KYC verification."
+    
+    return [bullet1, bullet2, bullet3]
+
 async def summarize_ticket(ticket_data_str: str) -> list[str]:
     system_prompt = (
         "You are an AI assistant for FinnovaX Nexus Portal. Your task is to summarize the following "
@@ -77,10 +111,11 @@ async def summarize_ticket(ticket_data_str: str) -> list[str]:
         match = re.search(r'\[.*\]', response_text.replace('\n', ''))
         if match:
             bullets = json.loads(match.group(0))
-            if isinstance(bullets, list):
+            if isinstance(bullets, list) and len(bullets) > 0 and not any("failed to respond" in str(b) for b in bullets):
                 return bullets
     except Exception as e:
         print(f"Summarizer failed to parse JSON array: {e}")
         
-    # Fallback if it fails to generate strict JSON
-    return ["AI Summary generation failed", "Check ticket details manually", response_text[:100]]
+    # Smart extractive fallback if LLM hits rate limits (429) or offline
+    print("Engaging rule-based extractive summarizer fallback due to LLM quota/offline.")
+    return generate_extractive_summary(ticket_data_str)

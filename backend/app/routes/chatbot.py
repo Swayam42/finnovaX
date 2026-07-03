@@ -45,6 +45,24 @@ async def ask_chatbot(request: ChatRequest):
     # 5. LLM Call
     llm_response = await query_llm(full_prompt)
     
+    # Graceful fallback if Gemini hits 429 quota or fails in cloud
+    if "failed to respond" in llm_response or "429" in llm_response or "RESOURCE_EXHAUSTED" in llm_response:
+        q_lower = request.question.lower().strip()
+        if q_lower in ["hi", "hello", "hey", "start", "help", "good morning", "good evening"]:
+            llm_response = (
+                "Welcome to FinnovaX! 👋\n\nI'm Finora, your personal investment services assistant.\n\n"
+                "I can help you with:\n"
+                "• Understanding your KYC or profile status\n"
+                "• Ticket submissions and service requests\n"
+                "• Bank account, nominee, or address update queries\n"
+                "• General platform FAQs\n\n"
+                "What can I help you with today?"
+            )
+        elif context_str:
+            llm_response = f"{context_str}\n\n*(Answer retrieved directly from FinnovaX Knowledge Base)*"
+        else:
+            llm_response = "I am currently experiencing high AI traffic, but our L1/L2 support desk is actively monitoring all tickets. Please submit a service request or check your dashboard for real-time updates."
+    
     return ChatResponse(
         query=request.question,
         response=llm_response,
