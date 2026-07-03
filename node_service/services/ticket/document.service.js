@@ -91,7 +91,8 @@ exports.uploadDocuments = async (files) => {
 };
 
 exports.runOcrOnDocument = async (fileBuffer, mimetype, originalname) => {
-    const ocrUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+    const mlService = require('../mlService');
+    const ocrUrl = mlService.getMlUrl();
     try {
         const formData = new FormData();
         formData.append('file', fileBuffer, {
@@ -100,7 +101,8 @@ exports.runOcrOnDocument = async (fileBuffer, mimetype, originalname) => {
         });
 
         const ocrRes = await axios.post(`${ocrUrl}/ocr/extract`, formData, {
-            headers: { ...formData.getHeaders() }
+            headers: { ...formData.getHeaders() },
+            timeout: 45000
         });
         
         return ocrRes.data.text || '';

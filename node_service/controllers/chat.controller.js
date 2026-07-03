@@ -59,12 +59,12 @@ exports.askAssistant = async (req, res) => {
         }));
 
         // Proxy the request to Python RAG Engine
-        let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
-        mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
+        const mlService = require('../services/mlService');
+        const mlServiceUrl = mlService.getMlUrl();
         const aiResponse = await axios.post(`${mlServiceUrl}/chatbot/ask`, {
             question: question,
             history: historyForMl
-        }, { timeout: 30000 });
+        }, { timeout: 45000 });
 
         const mlData = aiResponse.data;
 

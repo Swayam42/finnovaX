@@ -3,7 +3,15 @@ const axios = require('axios');
 const FormData = require('form-data');
 
 const getMlUrl = () => {
-    const url = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+    let url = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+    // Normalize Hugging Face web UI links (huggingface.co/spaces/User/Repo) to direct API domain (user-repo.hf.space)
+    if (url.includes('huggingface.co/spaces/')) {
+        let clean = url.replace(/https?:\/\//, '').replace('huggingface.co/spaces/', '').replace(/\/+$/, '');
+        const parts = clean.split('/');
+        if (parts.length >= 2) {
+            url = `https://${parts[0].toLowerCase()}-${parts[1].toLowerCase()}.hf.space`;
+        }
+    }
     return url.replace(/\/+$/, '');
 };
 
@@ -23,11 +31,11 @@ const verifyAccount = async (fileBuffer, originalname, mimetype, accountNumber) 
     try {
         const response = await axios.post(`${getMlUrl()}/ocr/verify-account`, formData, {
             headers: formData.getHeaders(),
-            timeout: 15000
+            timeout: 45000 // 45s timeout to allow Hugging Face free CPU containers to wake up from sleep
         });
         return response.data;
     } catch (error) {
-        console.error("ML Service Unreachable (verifyAccount), using Mock Fallback.");
+        console.error("ML Service Unreachable (verifyAccount), using Mock Fallback:", error.message || error);
         return { account_found: true, extracted_text: ['MOCK_ACCOUNT_EXTRACTED'], message: 'Mock Verification Successful' };
     }
 };
@@ -51,11 +59,11 @@ const verifyKyc = async (files, targetName, targetDob) => {
         const url = `${getMlUrl()}/ocr/verify-kyc`;
         const response = await axios.post(url, formData, {
             headers: formData.getHeaders(),
-            timeout: 15000
+            timeout: 45000
         });
         return response.data;
     } catch (error) {
-        console.error("ML Service Unreachable (verifyKyc), using Mock Fallback.");
+        console.error("ML Service Unreachable (verifyKyc), using Mock Fallback:", error.message || error);
         return { match_found: true, extracted_text: ['MOCK_NAME', 'MOCK_DOB'], message: 'Mock KYC Match Successful' };
     }
 };
@@ -69,10 +77,10 @@ const summarizeTicket = async (ticketData) => {
     try {
         const response = await axios.post(`${getMlUrl()}/summarize/ticket`, {
             ticket_data: ticketData
-        }, { timeout: 15000 });
+        }, { timeout: 45000 });
         return response.data;
     } catch (error) {
-        console.error("ML Service Unreachable (summarizeTicket), using Mock Fallback.");
+        console.error("ML Service Unreachable (summarizeTicket), using Mock Fallback:", error.message || error);
         return { summary: ['Ticket created successfully', 'Awaiting L1 Review', 'Local Dev Fallback Active'] };
     }
 };
@@ -84,12 +92,12 @@ const summarizeTicket = async (ticketData) => {
  */
 const analyzeSentiment = async (text) => {
     try {
-        const response = await axios.post(`${getMlUrl()}/sentiment/analyze`, { text }, { timeout: 15000 });
+        const response = await axios.post(`${getMlUrl()}/sentiment/analyze`, { text }, { timeout: 45000 });
         return response.data;
     } catch (error) {
-        console.error("ML Service Unreachable (analyzeSentiment), using Mock Fallback.");
+        console.error("ML Service Unreachable (analyzeSentiment), using Mock Fallback:", error.message || error);
         return { sentiment: 'Neutral', score: 0.5, priority: 'HIGH', fraud_alert: false, intent: 'GENERAL_QUERY' };
     }
 };
 
-module.exports = { verifyAccount, verifyKyc, summarizeTicket, analyzeSentiment };
+module.exports = { verifyAccount, verifyKyc, summarizeTicket, analyzeSentiment, getMlUrl };
