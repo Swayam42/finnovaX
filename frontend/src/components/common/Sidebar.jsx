@@ -144,7 +144,7 @@ const AppSidebar = ({ activeTab, onTabChange }) => {
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground pointer-events-none hover:bg-transparent">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 shadow-sm">
-                  <GalleryVerticalEnd className="size-4" />
+                  <img src="/favicon.svg" alt="FinnovaX Logo" className="size-4 invert dark:invert-0" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight text-zinc-900 dark:text-zinc-100">
                   <span className="truncate font-semibold">FinnovaX</span>

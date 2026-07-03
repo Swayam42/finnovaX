@@ -82,6 +82,9 @@ const RegisterPage = () => {
       if (data.accessToken) {
           localStorage.setItem('finnovax_access_token', data.accessToken);
       }
+      if (data.refreshToken) {
+          localStorage.setItem('finnovax_refresh_token', data.refreshToken);
+      }
       navigate('/login', { state: { message: 'Registration successful! Please login.' } });
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Registration failed';

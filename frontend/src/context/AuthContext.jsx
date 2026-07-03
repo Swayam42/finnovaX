@@ -21,6 +21,9 @@ export const AuthProvider = ({ children }) => {
         if (res.data.accessToken) {
             localStorage.setItem('finnovax_access_token', res.data.accessToken);
         }
+        if (res.data.refreshToken) {
+            localStorage.setItem('finnovax_refresh_token', res.data.refreshToken);
+        }
         return res.data;
     }, []);
 
@@ -28,6 +31,9 @@ export const AuthProvider = ({ children }) => {
         const res = await authApi.verifyOtp(email, otp);
         if (res.data.accessToken) {
             localStorage.setItem('finnovax_access_token', res.data.accessToken);
+        }
+        if (res.data.refreshToken) {
+            localStorage.setItem('finnovax_refresh_token', res.data.refreshToken);
         }
         const { user: userData } = res.data;
         updateSession(userData);
@@ -41,6 +47,7 @@ export const AuthProvider = ({ children }) => {
             // Ignore errors, still clear client-side session
         } finally {
             localStorage.removeItem('finnovax_access_token');
+            localStorage.removeItem('finnovax_refresh_token');
             clearSession();
         }
     }, [clearSession]);

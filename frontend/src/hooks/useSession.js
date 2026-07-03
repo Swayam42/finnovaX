@@ -17,6 +17,7 @@ export const useSession = () => {
                 // Token expired or invalid
                 localStorage.removeItem('finnovax_user');
                 localStorage.removeItem('finnovax_access_token');
+                localStorage.removeItem('finnovax_refresh_token');
                 setUser(null);
                 setError(err);
             } finally {
@@ -30,6 +31,7 @@ export const useSession = () => {
     const clearSession = useCallback(() => {
         localStorage.removeItem('finnovax_user');
         localStorage.removeItem('finnovax_access_token');
+        localStorage.removeItem('finnovax_refresh_token');
         setUser(null);
     }, []);
 

@@ -4,13 +4,17 @@ const cookieService = require('../../services/auth/cookie.service');
 
 exports.refresh = async (req, res) => {
     try {
-        const currentRefreshToken = req.cookies.finnovax_refresh_token;
+        const currentRefreshToken = req.cookies.finnovax_refresh_token || req.body?.refreshToken || req.headers['x-refresh-token'];
         if (!currentRefreshToken) return res.status(401).json({ message: 'No refresh token provided.' });
 
         const { newAccessToken, newRefreshToken, userId } = await tokenService.rotateRefreshToken(currentRefreshToken);
         
         cookieService.setAuthCookies(res, newAccessToken, newRefreshToken);
-        return res.status(200).json({ message: 'Session refreshed.' });
+        return res.status(200).json({ 
+            message: 'Session refreshed.',
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken 
+        });
     } catch (error) {
         console.warn('[Auth] Refresh flow failure:', error.message);
         cookieService.clearAuthCookies(res);
@@ -20,7 +24,7 @@ exports.refresh = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
-        const refreshToken = req.cookies.finnovax_refresh_token;
+        const refreshToken = req.cookies.finnovax_refresh_token || req.body?.refreshToken || req.headers['x-refresh-token'];
         if (refreshToken) {
             // Revoke specific token (or entire family depending on strictness)
             const crypto = require('crypto');

@@ -26,39 +26,59 @@ apiClient.interceptors.response.use(
         const originalRequest = error.config;
         const clearAuthStorage = () => {
             localStorage.removeItem('finnovax_access_token');
+            localStorage.removeItem('finnovax_refresh_token');
             localStorage.removeItem('finnovax_user');
         };
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
-            // Avoid infinite loops if the refresh endpoint itself returns 401
-            if (originalRequest.url.includes('/auth/refresh') || originalRequest.url.includes('/auth/login')) {
+            // Avoid infinite loops and unwanted refresh calls on public/auth endpoints
+            const isAuthEndpoint = 
+                originalRequest.url.includes('/auth/refresh') || 
+                originalRequest.url.includes('/auth/login') || 
+                originalRequest.url.includes('/auth/register') ||
+                originalRequest.url.includes('/auth/me') ||
+                originalRequest.url.includes('/auth/verify-otp') ||
+                originalRequest.url.includes('/auth/forgot-password') ||
+                originalRequest.url.includes('/auth/reset-password');
+
+            if (isAuthEndpoint) {
                 clearAuthStorage();
-                // Only redirect to login if we are on a protected route (not landing page or register)
                 const currentPath = window.location.pathname;
-                if (!currentPath.includes('/login') && !currentPath.includes('/register') && currentPath !== '/') {
+                if (!currentPath.includes('/login') && !currentPath.includes('/register') && !currentPath.includes('/forgot-password') && currentPath !== '/') {
                     window.location.href = '/login';
                 }
                 return Promise.reject(error);
             }
 
             try {
-                // Attempt to refresh the token using the httpOnly cookie
-                await axios.post(
+                // Attempt to refresh the token using httpOnly cookie OR localStorage fallback
+                const storedRefreshToken = localStorage.getItem('finnovax_refresh_token');
+                const refreshRes = await axios.post(
                     `${apiClient.defaults.baseURL}/auth/refresh`,
-                    {},
-                    { withCredentials: true }
+                    storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
+                    { 
+                        withCredentials: true,
+                        headers: storedRefreshToken ? { 'x-refresh-token': storedRefreshToken } : {}
+                    }
                 );
 
-                // The backend successfully set a new access_token cookie
-                // Retry the original request (it will automatically send the new cookie)
+                if (refreshRes.data?.accessToken) {
+                    localStorage.setItem('finnovax_access_token', refreshRes.data.accessToken);
+                }
+                if (refreshRes.data?.refreshToken) {
+                    localStorage.setItem('finnovax_refresh_token', refreshRes.data.refreshToken);
+                }
+
+                // The backend successfully rotated tokens
+                // Retry the original request (it will automatically send the new token)
                 return apiClient(originalRequest);
             } catch (refreshError) {
                 // Refresh token invalid or expired
                 clearAuthStorage();
                 const currentPath = window.location.pathname;
-                if (!currentPath.includes('/login') && !currentPath.includes('/register') && currentPath !== '/') {
+                if (!currentPath.includes('/login') && !currentPath.includes('/register') && !currentPath.includes('/forgot-password') && currentPath !== '/') {
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);

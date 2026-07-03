@@ -9,7 +9,7 @@ const DashboardHeader = () => {
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="h-8 w-8 bg-zinc-900 dark:bg-zinc-100 rounded flex items-center justify-center shadow-sm border border-zinc-800 dark:border-zinc-200">
-                            <ShieldCheck className="h-5 w-5 text-amber-500 dark:text-zinc-900" />
+                            <img src="/favicon.svg" alt="FinnovaX Logo" className="h-4 w-4 invert dark:invert-0" />
                         </div>
                         <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">FinnovaX</h1>
                     </div>

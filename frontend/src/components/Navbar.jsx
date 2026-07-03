@@ -53,7 +53,7 @@ const Navbar = () => {
                 {/* Brand */}
                 <Link to="/" className="flex items-center gap-2 shrink-0 transition-opacity hover:opacity-80">
                     <div className="bg-zinc-900 dark:bg-zinc-100 p-1.5 rounded-md flex items-center justify-center">
-                        <Activity className="w-4 h-4 text-white dark:text-zinc-900" />
+                        <img src="/favicon.svg" alt="FinnovaX Logo" className="w-4 h-4 invert dark:invert-0" />
                     </div>
                     <span className="font-bold text-base tracking-tight text-zinc-900 dark:text-zinc-100 hidden sm:inline-block">
                         FinnovaX

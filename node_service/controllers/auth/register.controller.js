@@ -73,7 +73,8 @@ exports.register = async (req, res) => {
         return res.status(201).json({ 
             message: 'Registration successful.', 
             user: userService.getPublicProfile(newUser),
-            accessToken
+            accessToken,
+            refreshToken
         });
     } catch (error) {
         console.error('[Auth] Register error:', error);
