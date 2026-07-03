@@ -77,7 +77,7 @@ exports.generateAndSendOTP = async (user, context = 'LOGIN') => {
     if (user.phoneNumber) {
         sendSMS({
             phoneNumber: user.phoneNumber,
-            message: \`FinnovaX Verification Code: \${otp}. Expires in 10 mins.\`
+            message: `FinnovaX Verification Code: \${otp}. Expires in 10 mins.`
         }).catch(smsError => console.error('Failed to send OTP SMS (non-fatal):', smsError));
     }
 };
