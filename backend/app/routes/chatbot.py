@@ -25,7 +25,8 @@ async def ask_chatbot(request: ChatRequest):
         "• Bank account, nominee, or address update queries\n"
         "• General platform FAQs\n\n"
         "What can I help you with today?'\n\n"
-        "For all other questions: answer ONLY using the provided context. "
+        "For all other questions: answer ONLY using the provided context in a clean, direct paragraph. "
+        "Do NOT prefix your answer with 'Q:' or 'A:' or repeat the question. Return only the direct answer text. "
         "If the answer is not in the context, say 'I don't have that information right now, but our support team is here to help.' "
         "Never hallucinate policies or invent information."
     )
@@ -45,6 +46,12 @@ async def ask_chatbot(request: ChatRequest):
     # 5. LLM Call
     llm_response = await query_llm(full_prompt)
     
+    # Clean up any accidental Q/A prefix from LLM response
+    if llm_response.startswith("A: "):
+        llm_response = llm_response.split("A: ", 1)[1].strip()
+    elif "\nA: " in llm_response and llm_response.startswith("Q: "):
+        llm_response = llm_response.split("\nA: ", 1)[1].strip()
+    
     # Graceful fallback if Gemini hits 429 quota or fails in cloud
     if "failed to respond" in llm_response or "429" in llm_response or "RESOURCE_EXHAUSTED" in llm_response:
         q_lower = request.question.lower().strip()
@@ -59,7 +66,7 @@ async def ask_chatbot(request: ChatRequest):
                 "What can I help you with today?"
             )
         elif context_str:
-            llm_response = f"{context_str}\n\n*(Answer retrieved directly from FinnovaX Knowledge Base)*"
+            llm_response = context_str
         else:
             llm_response = "I am currently experiencing high AI traffic, but our L1/L2 support desk is actively monitoring all tickets. Please submit a service request or check your dashboard for real-time updates."
     

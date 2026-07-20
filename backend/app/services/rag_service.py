@@ -46,7 +46,16 @@ def query_context(question: str):
             for i in range(len(docs)):
                 # L2 distance > 1.1 means it's totally unrelated (like a basic greeting)
                 if distances[i] < 1.1:
-                    valid_docs.append(docs[i])
+                    ans_text = metas[i].get("answer")
+                    if not ans_text:
+                        doc_content = docs[i]
+                        if "\nA: " in doc_content:
+                            ans_text = doc_content.split("\nA: ", 1)[1].strip()
+                        elif "A: " in doc_content:
+                            ans_text = doc_content.split("A: ", 1)[1].strip()
+                        else:
+                            ans_text = doc_content.strip()
+                    valid_docs.append(ans_text)
                     sources.append(metas[i].get("question", "FAQ Database"))
                     
             context_str = "\n\n".join(valid_docs)
