@@ -10,6 +10,9 @@ const sendEmail = async ({ to, subject, message }) => {
                 port: 465,
                 secure: true,
                 family: 4, // Force IPv4 to prevent ENETUNREACH errors on IPv6-enabled cloud containers/networks like Render
+                connectionTimeout: 5000, // 5 seconds max to connect
+                greetingTimeout: 5000,   // 5 seconds max for SMTP greeting
+                socketTimeout: 10000,    // 10 seconds max overall socket timeout
                 auth: {
                     user: process.env.SMTP_USER,
                     pass: process.env.SMTP_PASS
