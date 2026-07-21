@@ -1,4 +1,11 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Force Node.js to resolve IPv4 addresses first. This prevents ENETUNREACH errors on cloud platforms like Render
+// where containers have IPv6 enabled in DNS but outbound IPv6 routing is disabled.
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
 
 // Helper to create Nodemailer transport with specific port and security setting
 const createTransportForPort = (port, secure) => {
@@ -7,16 +14,16 @@ const createTransportForPort = (port, secure) => {
         host: process.env.SMTP_HOST || 'smtp.gmail.com',
         port: port,
         secure: secure,
-        family: 4, // Force IPv4 to prevent ENETUNREACH errors on IPv6-enabled cloud containers
         connectionTimeout: 10000, // 10 seconds max to connect
         greetingTimeout: 10000,   // 10 seconds max for SMTP greeting
         socketTimeout: 15000,     // 15 seconds max overall socket timeout
+        tls: {
+            rejectUnauthorized: false,
+            servername: 'smtp.gmail.com'
+        },
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS
-        },
-        tls: {
-            rejectUnauthorized: false
         }
     });
 };
@@ -131,8 +138,16 @@ const verifySMTPConnection = async () => {
         console.log(`✅ [Nodemailer] SMTP connection verified successfully on Port ${port} (${process.env.SMTP_USER}).`);
     } catch (error) {
         console.warn(`⚠️ [Nodemailer Verification Warning] Could not verify SMTP connection on Port ${port}: ${error.message || error}`);
-        if (port === 465 && (error.code === 'ETIMEDOUT' || error.code === 'ENETUNREACH' || error.message?.includes('timeout'))) {
-            console.warn(`ℹ️ Note: Your cloud provider might be blocking outbound port 465. The service will automatically try Port 587 (STARTTLS) or Simulation Mode when sending emails.`);
+        if (port === 465 && (error.code === 'ETIMEDOUT' || error.code === 'ENETUNREACH' || error.message?.includes('timeout') || error.code === 'ECONNREFUSED')) {
+            console.warn(`🔄 Testing fallback Port 587 (STARTTLS)...`);
+            try {
+                const fallbackTransport = createTransportForPort(587, false);
+                await fallbackTransport.verify();
+                console.log(`✅ [Nodemailer Fallback] SMTP connection verified successfully on Port 587 (${process.env.SMTP_USER}).`);
+            } catch (fallbackErr) {
+                console.warn(`⚠️ [Nodemailer] Both Port 465 and Port 587 verification failed on this cloud network: ${fallbackErr.message || fallbackErr}`);
+                console.warn(`ℹ️ Note: Render Free Tier often blocks all outbound SMTP ports. Emails will safely use HTTP API / Simulation Mode.`);
+            }
         } else if (error.code === 'EAUTH' || error.responseCode === 535) {
             console.warn(`🔑 Gmail Authentication Note: Ensure you are using a 16-character App Password generated from Google Account Security settings.`);
         }
