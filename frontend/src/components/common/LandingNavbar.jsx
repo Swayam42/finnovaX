@@ -37,7 +37,7 @@ const LandingNavbar = () => {
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 group">
                     <div className="w-8 h-8 rounded-lg bg-finnovax-primary/20 flex items-center justify-center border border-finnovax-primary/30 group-hover:bg-finnovax-primary/40 transition-colors">
-                        <img src="/favicon.svg" alt="FinnovaX Logo" className="w-5 h-5 invert" />
+                        <img src="/favicon.svg" alt="FinnovaX Logo" className="w-5 h-5 brightness-0 invert" />
                     </div>
                     <span className="text-2xl font-bold tracking-tight text-white">
                         Finnova<span className="text-finnovax-primary">X</span>

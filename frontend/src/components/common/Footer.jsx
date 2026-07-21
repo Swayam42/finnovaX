@@ -12,7 +12,7 @@ const Footer = () => {
                     <div className="col-span-1 md:col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-4 group inline-flex">
                             <div className="w-8 h-8 rounded-lg bg-finnovax-primary/10 flex items-center justify-center border border-finnovax-primary/20 group-hover:bg-finnovax-primary/20 transition-colors">
-                                <Rocket className="w-4 h-4 text-white" />
+                                <img src="/favicon.svg" alt="FinnovaX Logo" className="w-4 h-4 brightness-0 invert" />
                             </div>
                             <span className="text-xl font-bold tracking-tight text-white">
                                 Finnova<span className="text-finnovax-primary">X</span>
