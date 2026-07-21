@@ -119,5 +119,7 @@ const { verifySMTPConnection } = require('./services/sesService');
 
 app.listen(PORT, () => {
     console.log(`FinnovaX Server is running on port ${PORT}.`);
-    verifySMTPConnection().catch(err => console.error('SMTP verification check error:', err.message));
+    if (typeof verifySMTPConnection === 'function') {
+        verifySMTPConnection().catch(err => console.error('SMTP verification check error:', err.message));
+    }
 });
