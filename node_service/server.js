@@ -10,7 +10,7 @@ const { startAutoCloseJob } = require('./services/autoCloseService');
 
 const app = express();
 // Trust Render's load balancer chain (prevents X-Forwarded-For rate limit warnings)
-app.set('trust proxy', 2); 
+app.set('trust proxy', 2);
 const PORT = process.env.PORT || 5000;
 
 // Security and utility middleware
@@ -45,35 +45,35 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27018/finnov
 mongoose.connect(MONGODB_URI)
     .then(async () => {
         console.log('✅ Successfully connected to MongoDB Database.');
-        
+
         // --- START AUTOMATED INITIALIZATION ---
         try {
             console.log('🔄 Initializing system dependencies...');
-            
+
             try {
                 await mongoose.connection.db.admin().command({ replSetInitiate: {} });
                 console.log("🗄️ MongoDB Replica Set Initialized automatically!");
                 // Wait 2 seconds for primary election
                 await new Promise(r => setTimeout(r, 2000));
-            } catch(e) {
+            } catch (e) {
                 if (e.codeName === 'AlreadyInitialized') {
                     // Ignore already initialized
                 } else {
                     console.log("🗄️ Replica Set init note:", e.message);
                 }
             }
-            
+
             // 1. Seed dummy user so Investor has a mock Email & SMS
-            if (process.env.SEED_DEMO_USERS === 'true') require('./seed_user'); 
-            
+            if (process.env.SEED_DEMO_USERS === 'true') require('./seed_user');
+
             // 2. Initialize AWS LocalStack (S3 Bucket, SES Verification)
             require('./test_localstack');
 
             console.log('✅ System dependencies initialized.');
-            
+
             // Start Background Jobs
             startAutoCloseJob();
-            
+
         } catch (initErr) {
             console.log('⚠️ Non-critical warning during initialization:', initErr.message);
         }
@@ -109,12 +109,15 @@ app.use('/api/notifications', notificationRoutes);
 
 // Simple Health Check Endpoint
 app.get('/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'UP', 
-        message: 'FinnovaX Node.js Core Backend is fully operational.' 
+    res.status(200).json({
+        status: 'UP',
+        message: 'FinnovaX Node.js Core Backend is fully operational.'
     });
 });
 
+const { verifySMTPConnection } = require('./services/sesService');
+
 app.listen(PORT, () => {
-    console.log(`🚀 FinnovaX Nexus Server is running on port ${PORT}.`);
+    console.log(`FinnovaX Server is running on port ${PORT}.`);
+    verifySMTPConnection().catch(err => console.error('SMTP verification check error:', err.message));
 });
