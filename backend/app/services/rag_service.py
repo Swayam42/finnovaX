@@ -10,18 +10,23 @@ _initialized = False
 
 def get_collection():
     global _collection, _initialized
-    if not _initialized:
+    if not _initialized or _collection is None:
         with _collection_lock:
-            if not _initialized:
+            if not _initialized or _collection is None:
                 try:
                     db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
                     chroma_client = chromadb.PersistentClient(path=db_path)
                     emb_fn = embedding_functions.DefaultEmbeddingFunction()
-                    _collection = chroma_client.get_collection(name="finnovax_faqs", embedding_function=emb_fn)
+                    _collection = chroma_client.get_or_create_collection(name="finnovax_faqs", embedding_function=emb_fn)
+                    if _collection.count() == 0:
+                        print("Collection is empty upon query. Seeding FAQs on demand...")
+                        from app.services.knowledge_base import seed_faqs
+                        seed_faqs()
+                        _collection = chroma_client.get_collection(name="finnovax_faqs", embedding_function=emb_fn)
+                    _initialized = True
                 except Exception as e:
                     print(f"Warning: Could not connect to ChromaDB or collection not found. Error: {e}")
                     _collection = None
-                _initialized = True
     return _collection
 
 def query_context(question: str):
