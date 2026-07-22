@@ -46,7 +46,6 @@ const ForgotPasswordPage = () => {
         }
         setIsLoading(true);
         setError('');
-        setError('');
 
         try {
             await authApi.forgotPassword(email.trim().toLowerCase());
@@ -62,7 +61,6 @@ const ForgotPasswordPage = () => {
 
     const handleResendOtp = async () => {
         setIsLoading(true);
-        setError('');
         setError('');
         try {
             await authApi.forgotPassword(email.trim().toLowerCase());
@@ -250,7 +248,6 @@ const ForgotPasswordPage = () => {
                                         className="rounded-lg border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 bg-transparent"
                                         onClick={() => {
                                             setIsOtpStep(false);
-                                            setError('');
                                             setError('');
                                         }}>
                                         Cancel
