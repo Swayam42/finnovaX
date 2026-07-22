@@ -10,18 +10,23 @@ _initialized = False
 
 def get_collection():
     global _collection, _initialized
-    if not _initialized:
+    if not _initialized or _collection is None:
         with _collection_lock:
-            if not _initialized:
+            if not _initialized or _collection is None:
                 try:
                     db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
                     chroma_client = chromadb.PersistentClient(path=db_path)
                     emb_fn = embedding_functions.DefaultEmbeddingFunction()
-                    _collection = chroma_client.get_collection(name="finnovax_faqs", embedding_function=emb_fn)
+                    _collection = chroma_client.get_or_create_collection(name="finnovax_faqs", embedding_function=emb_fn)
+                    if _collection.count() == 0:
+                        print("Collection is empty upon query. Seeding FAQs on demand...")
+                        from app.services.knowledge_base import seed_faqs
+                        seed_faqs()
+                        _collection = chroma_client.get_collection(name="finnovax_faqs", embedding_function=emb_fn)
+                    _initialized = True
                 except Exception as e:
                     print(f"Warning: Could not connect to ChromaDB or collection not found. Error: {e}")
                     _collection = None
-                _initialized = True
     return _collection
 
 def query_context(question: str):
@@ -46,7 +51,16 @@ def query_context(question: str):
             for i in range(len(docs)):
                 # L2 distance > 1.1 means it's totally unrelated (like a basic greeting)
                 if distances[i] < 1.1:
-                    valid_docs.append(docs[i])
+                    ans_text = metas[i].get("answer")
+                    if not ans_text:
+                        doc_content = docs[i]
+                        if "\nA: " in doc_content:
+                            ans_text = doc_content.split("\nA: ", 1)[1].strip()
+                        elif "A: " in doc_content:
+                            ans_text = doc_content.split("A: ", 1)[1].strip()
+                        else:
+                            ans_text = doc_content.strip()
+                    valid_docs.append(ans_text)
                     sources.append(metas[i].get("question", "FAQ Database"))
                     
             context_str = "\n\n".join(valid_docs)

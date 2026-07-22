@@ -29,12 +29,37 @@ exports.uploadDocuments = async (files) => {
         let documentUrl = null;
         
         try {
-            if (process.env.CLOUDINARY_URL) {
-                // Try Cloudinary
+            let s3Success = false;
+            // 1. Try LocalStack / AWS S3 First
+            if (process.env.AWS_ENDPOINT_URL || process.env.AWS_ACCESS_KEY_ID) {
                 try {
+                    await uploadToS3({
+                        Key: fileName,
+                        Body: file.buffer,
+                        ContentType: file.mimetype,
+                    });
+                    
+                    const bucket = process.env.AWS_BUCKET_NAME || "finnovax-bucket";
+                    if (process.env.AWS_ENDPOINT_URL) {
+                        const publicEndpoint = process.env.PUBLIC_S3_URL || "http://localhost:4566";
+                        documentUrl = `${publicEndpoint}/${bucket}/${encodeURIComponent(fileName)}`;
+                    } else {
+                        const region = process.env.AWS_REGION || "ap-south-1";
+                        documentUrl = `https://${bucket}.s3.${region}.amazonaws.com/${encodeURIComponent(fileName)}`;
+                    }
+                    s3Success = true;
+                } catch (s3Err) {
+                    console.warn(`LocalStack/S3 Upload failed (${s3Err.code || s3Err.message}). Falling back to Cloudinary...`);
+                }
+            }
+
+            // 2. Fallback to Cloudinary if S3/LocalStack is down or not configured
+            if (!s3Success && process.env.CLOUDINARY_URL) {
+                try {
+                    const resourceType = file.mimetype === 'application/pdf' ? 'raw' : 'auto';
                     const uploadResult = await new Promise((resolve, reject) => {
                         cloudinary.uploader.upload_stream(
-                            { resource_type: 'auto', public_id: fileName, folder: 'finnovax-nexus' },
+                            { resource_type: resourceType, public_id: fileName, folder: 'finnovax-nexus' },
                             (error, result) => {
                                 if (error) reject(error);
                                 else resolve(result);
@@ -43,34 +68,16 @@ exports.uploadDocuments = async (files) => {
                     });
                     documentUrl = uploadResult.secure_url;
                 } catch (cloudinaryErr) {
-                    console.error("Cloudinary Upload Error, falling back to LocalStack:", cloudinaryErr.message);
+                    console.error("Cloudinary Upload Error:", cloudinaryErr.message || cloudinaryErr);
                 }
             }
             
-            // If Cloudinary wasn't configured, or if it failed, use S3 ONLY if explicitly enabled
+            // 3. Final Fallback for local development if both LocalStack and Cloudinary are unreachable
             if (!documentUrl) {
-                if (process.env.NODE_ENV === 'production' && !process.env.AWS_ACCESS_KEY_ID) {
-                    throw new Error("Cloudinary URL is missing or upload failed, and no AWS S3 credentials provided for fallback.");
-                }
-
-                await uploadToS3({
-                    Key: fileName,
-                    Body: file.buffer,
-                    ContentType: file.mimetype,
-                });
-                
-                const bucket = process.env.AWS_BUCKET_NAME || "finnovax-bucket";
-                if (process.env.AWS_ENDPOINT_URL) {
-                    const publicEndpoint = process.env.PUBLIC_S3_URL || "http://localhost:4566";
-                    documentUrl = `${publicEndpoint}/${bucket}/${encodeURIComponent(fileName)}`;
-                } else {
-                    const region = process.env.AWS_REGION || "ap-south-1";
-                    documentUrl = `https://${bucket}.s3.${region}.amazonaws.com/${encodeURIComponent(fileName)}`;
-                }
+                documentUrl = `http://localhost/mock-uploads/${encodeURIComponent(fileName)}`;
             }
         } catch (error) {
             console.error("Storage Upload Error, using Local Mock Fallback:", error.message);
-            // Fallback for local development if all external services are unreachable
             documentUrl = `http://localhost/mock-uploads/${encodeURIComponent(fileName)}`;
         }
 

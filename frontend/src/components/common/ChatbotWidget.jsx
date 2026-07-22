@@ -141,9 +141,9 @@ const ChatbotWidget = () => {
     const sessionId = getSessionId();
 
     const SUGGESTED_QUESTIONS = [
-        "How do I create an account?",
-        "What is the SLA for a KYC update?",
-        "How do I escalate a ticket?"
+        "What docs are needed for a Bank Accnt Update?",
+        "What is the SLA for a Complaint?",
+        "What is the Dividend Reinvestment SLA?"
     ];
 
     useEffect(() => {

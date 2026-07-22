@@ -1370,7 +1370,17 @@ refactor: Extract token rotation to separate service
 - Commit your `.env.example` changes when adding new environment variables
 
 ---
+## 👥 Contributors
 
+<div align="center">
+
+<a href="https://github.com/ErAmitKumarBehera-AKB/kfintech-nexus-portal/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ErAmitKumarBehera-AKB/kfintech-nexus-portal" />
+</a>
+
+</div>
+
+---
 ## 📜 License
 
 This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.
@@ -1383,9 +1393,7 @@ This project is licensed under the MIT License — see the [LICENSE](./LICENSE) 
 
 **FinnovaX** — Designed and built with ❤️ by the FinnovaX Team
 
-[![GitHub Stars](https://img.shields.io/github/stars/Swayam42/finnovaX?style=social)](https://github.com/Swayam42/finnovaX)
-[![GitHub Forks](https://img.shields.io/github/forks/Swayam42/finnovaX?style=social)](https://github.com/Swayam42/finnovaX)
-[![GitHub Issues](https://img.shields.io/github/issues/Swayam42/finnovaX?style=social)](https://github.com/Swayam42/finnovaX/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/ErAmitKumarBehera-AKB/kfintech-nexus-portal?style=social)](https://github.com/ErAmitKumarBehera-AKB/kfintech-nexus-portal) [![GitHub Forks](https://img.shields.io/github/forks/ErAmitKumarBehera-AKB/kfintech-nexus-portal?style=social)](https://github.com/ErAmitKumarBehera-AKB/kfintech-nexus-portal) [![GitHub Issues](https://img.shields.io/github/issues/ErAmitKumarBehera-AKB/kfintech-nexus-portal?style=social)](https://github.com/ErAmitKumarBehera-AKB/kfintech-nexus-portal/issues)
 
 *© 2025 FinnovaX. All rights reserved.*
 

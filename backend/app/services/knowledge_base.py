@@ -33,7 +33,7 @@ def seed_faqs():
     for faq in faqs:
         doc_text = f"Q: {faq['question']}\nA: {faq['answer']}"
         documents.append(doc_text)
-        metadatas.append({"type": "faq", "question": faq['question']})
+        metadatas.append({"type": "faq", "question": faq['question'], "answer": faq['answer']})
         ids.append(faq["id"])
         
     print(f"Adding {len(documents)} FAQs to ChromaDB...")
